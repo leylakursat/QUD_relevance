@@ -1,0 +1,83 @@
+ quarter_1 = [
+	{sentence: "You got some gumballs.", image: "zero", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "eight", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav" },
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav" },
+	{sentence: "You got all of the gumballs.", image: "two", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "five", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got none of the gumballs.", image: "zero", audio: "none.wav"},
+	{sentence: "You got none of the gumballs.", image: "eight", audio: "none.wav"},
+	{sentence: "You got five of the gumballs.", image: "zero", audio: "five.wav"},
+	{sentence: "You got two of the gumballs.", image: "two", audio: "two.wav"},
+	{sentence: "You got two of the gumballs.", image: "two", audio: "two.wav"},
+	{sentence: "You got four of the gumballs.", image: "five", audio: "four.wav"},
+	{sentence: "You got eight of the gumballs.", image: "eight", audio: "eight.wav"},
+	{sentence: "You got thirteen of the gumballs.", image: "eight", audio: "thirteen.wav"},
+	{sentence: "You got eleven of the gumballs.", image: "eight", audio: "eleven.wav"},
+	{sentence: "You got eight of the gumballs.", image: "thirteen", audio: "eight.wav"}
+];
+ quarter_2 = [
+	{sentence: "You got some gumballs.", image: "zero", audio: "some.wav"},
+	{sentence: "You got some gumballs. ", image: "five", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav"},
+	{sentence: "You got all of the gumballs.", image: "zero", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "eleven", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got none of the gumballs.", image: "zero", audio: "none.wav"},
+	{sentence: "You got none of the gumballs.", image: "zero", audio: "none.wav"},
+	{sentence: "You got eleven of the gumballs.", image: "zero", audio: "eleven.wav"},
+	{sentence: "You got two of the gumballs. ", image: "two", audio: "two.wav"},
+	{sentence: "You got two of the gumballs.", image: "two", audio: "two.wav"},
+	{sentence: "You got five of the gumballs. ", image: "five", audio: "five.wav"},
+	{sentence: "You got ten of the gumballs. ", image: "five", audio: "ten.wav"},
+	{sentence: "You got eight of the gumballs.", image: "eight", audio: "eight.wav"},
+	{sentence: "You got eleven of the gumballs.", image: "eleven", audio: "eleven.wav"},
+	{sentence: "You got seven of the gumballs.", image: "eleven", audio: "seven.wav"}
+];
+quarter_3 = [
+	{sentence: "You got some gumballs.", image: "zero", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "two", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav"},
+	{sentence: "You got all of the gumballs.", image: "five", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "eight", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got none of the gumballs.", image: "zero", audio: "none.wav"},
+	{sentence: "You got none of the gumballs.", image: "thirteen", audio: "none.wav"},
+	{sentence: "You got three of the gumballs.", image: "zero", audio: "three.wav"},
+	{sentence: "You got two of the gumballs.", image: "two", audio: "two.wav"},
+	{sentence: "You got five of the gumballs.", image: "five", audio: "five.wav"},
+	{sentence: "You got two of the gumballs.", image: "five", audio: "two.wav"},
+	{sentence: "You got eight of the gumballs.", image: "eight", audio: "eight.wav"},
+	{sentence: "You got eight of the gumballs.", image: "eight", audio: "eight.wav"},
+	{sentence: "You got one of the gumballs.", image: "eleven", audio: "one.wav"},
+	{sentence: "You got ten of the gumballs.", image: "thirteen", audio: "ten.wav"}
+];
+quarter_4 = [
+	{sentence: "You got some gumballs.", image: "zero", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "eleven", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav"},
+	{sentence: "You got some gumballs.", image: "thirteen", audio: "some.wav"},
+	{sentence: "You got all of the gumballs. ", image: "zero", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "eleven", audio: "all.wav"},
+	{sentence: "You got all of the gumballs.", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got all of the gumballs. ", image: "thirteen", audio: "all.wav"},
+	{sentence: "You got none of the gumballs.", image: "zero", audio: "none.wav"},
+	{sentence: "You got none of the gumballs.", image: "two", audio: "none.wav"},
+	{sentence: "You got two of the gumballs.", image: "two", audio: "two.wav"},
+	{sentence: "You got twelve of the gumballs.", image: "two", audio: "twelve.wav"},
+	{sentence: "You got five of the gumballs.", image: "five", audio: "five.wav"},
+	{sentence: "You got nine of the gumballs.", image: "five", audio: "nine.wav"},
+	{sentence: "You got eight of the gumballs.", image: "eight", audio: "eight.wav"},
+	{sentence: "You got two of the gumballs.", image: "eight", audio: "two.wav"},
+	{sentence: "You got eleven of the gumballs.", image: "eleven", audio: "eleven.wav"},
+	{sentence: "You got five of the gumballs.", image: "thirteen", audio: "five.wav"}
+];
+
+
+
