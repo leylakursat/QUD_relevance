@@ -10,8 +10,81 @@ function make_slides(f) {
 
   slides.instructions = slide({
     name : "instructions",
+    start: function(){
+      $('.tut_initial_gumball').hide();
+      $('.tut_final_gumball').hide();
+      $('.tut_final2_gumball').hide();
+      $('.tut_agreed').hide();
+      $('.tut_disagreed').hide();
+      $('.tut_warning').hide();
+
+      document.onkeydown = checkKey;
+      
+      function checkKey(e) {
+        e = e || window.event;
+
+        if (($('.tut_instructions').is(":visible")) && (e.keyCode == 32)) {
+          $('.tut_instructions').hide();
+          $('.tut_initial_gumball').show();
+          setTimeout(function(){
+          $('.tut_initial_gumball').hide();
+          document.getElementById("tut_kaching").play();
+          $('.tut_final_gumball').show();  
+          setTimeout(function(){
+            document.getElementById("tut_stim").play(); 
+          },1000)
+          },2000)
+        }
+        if (($('.tut_final_gumball').is(":visible")) && (e.keyCode == 70)) {
+          alert("You pressed the NO key.");
+        }
+        if (($('.tut_final_gumball').is(":visible")) && (e.keyCode == 74)) {
+          $('.tut_final_gumball').hide();
+          $('.tut_agreed').show();
+        }
+        if (($('.tut_agreed').is(":visible")) && (e.keyCode == 32)) {
+          $('.tut_agreed').hide();
+          $('.tut_initial_gumball').show();
+          setTimeout(function(){
+          $('.tut_initial_gumball').hide();
+          document.getElementById("tut_kaching").play();
+          $('.tut_final2_gumball').show();  
+          setTimeout(function(){
+            document.getElementById("tut_stim2").play(); 
+          },1000)
+          },2000)
+        }
+        if (($('.tut_final2_gumball').is(":visible")) && (e.keyCode == 74)) {
+          alert("You pressed the YES key.");
+        }
+        if (($('.tut_final2_gumball').is(":visible")) && (e.keyCode == 70)) {
+          $('.tut_final2_gumball').hide();
+          $('.tut_disagreed').show();
+        }
+        if (($('.tut_disagreed').is(":visible")) && (e.keyCode == 70)) {
+          $('.tut_disagreed').hide();
+          $('.tut_warning').show();
+        }
+        if (($('.tut_warning').is(":visible")) && (e.keyCode == 70)) {
+          exp.go();
+        }
+      }
+    },
+  });
+
+  slides.comprehension = slide({
+    name : "comprehension",
+    start: function() {
+      console.log("comprehension questions");
+    },
     button : function() {
+      this.log_responses();
       exp.go();
+    },
+    log_responses : function() {
+      exp.catch_trials.push({
+          "slide_number": exp.phase,
+      });
     }
   });
 
@@ -64,7 +137,7 @@ function make_slides(f) {
       document.onkeydown = checkKey;
       function checkKey(e) {
         e = e || window.event;
-        if ((exp.startTime != 0) && (e.keyCode == 74 || e.keyCode == 70)) {
+        if (($('.final_gumball').is(":visible")) && (e.keyCode == 70 || e.keyCode == 74)) {
           console.log("Pressed J or F, Timer ended");                                               // TESTING
           exp.responseTime = Date.now()-exp.startTime;
           exp.keyCode = e.keyCode;
@@ -77,7 +150,6 @@ function make_slides(f) {
         }
       }
     },
-
     button : function() {
       this.log_responses();
       _stream.apply(this);
@@ -85,6 +157,7 @@ function make_slides(f) {
 
     log_responses : function() {
       exp.data_trials.push({
+          "slide_number": exp.phase,
           "stim" : this.stim.sentence,
           "image" : this.stim.image,
           "audio" : this.stim.audio,
@@ -135,7 +208,7 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
 
-  //exp.condition = _.sample(["condition1", "condition2"]);
+  exp.condition = "empty context - relevant condition";
 
 quarter_1 =[
   {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
@@ -234,7 +307,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "trial", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "comprehension", "trial", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:
