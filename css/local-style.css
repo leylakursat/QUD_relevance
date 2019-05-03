@@ -13,7 +13,7 @@ p2 {
 	color:#CB4335;
 }
 
-.button {
+/*.button {
     background-color: #4381C1;
     border: none;
     border-radius: 2px;
@@ -28,4 +28,22 @@ p2 {
     outline: none;
     padding: 5px 10px;
     text-transform: uppercase;
+}*/
+
+/*div img {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    margin:auto;
+}*/
+
+.center {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    margin:auto;
 }
