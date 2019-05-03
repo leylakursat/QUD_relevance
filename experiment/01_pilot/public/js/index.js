@@ -6,21 +6,45 @@ function make_slides(f) {
   slides.bot = slide({
     name : "bot",
     start: function() {
+      $('.err1').hide();
+      $('.err2').hide();
+      $('.disq').hide();
+
+      exp.speaker = _.shuffle(["James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles"])[0];
+      exp.listener = _.shuffle(["Mary", "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Margaret"])[0];
+      exp.lives = 0;
+
+      var story = exp.speaker + ' says to ' + exp.listener + ': "It\'s a beautiful day, isn\'t it?"'
+      var question = 'Who does ' + exp.speaker + ' talk to?';
+     
+      document.getElementById("s").innerHTML = story;
+      document.getElementById("q").innerHTML = question;
     },
     button : function() {
-      exp.go()
+      var answer = document.getElementById("text_box").value;
+      var lower = exp.listener.toLowerCase();
+      var upper = exp.listener.toUpperCase();
+
+      if ((exp.lives < 3) && ((answer == exp.listener)|(answer == lower) | (answer == upper))){
+        exp.go();
+      }
+      else {
+        if (exp.lives == 0){
+          $('.err1').show();
+        }
+        if (exp.lives == 1){
+          $('.err1').hide();
+          $('.err2').show();
+        }
+        if (exp.lives == 2){
+          $('.err2').hide();
+          $('.disq').show();
+        }
+        exp.lives++;
+      } 
     }
   });
    
-  slides.bot2 = slide({
-    name : "bot2",
-    start: function() {
-    },
-    button : function() {
-      exp.go()
-    }
-  });
-
   //ALL BOT STUFF STARTS HERE
 
   slides.i0 = slide({
@@ -211,7 +235,9 @@ function make_slides(f) {
       var initial_image = '<img src="img/initial.jpg" style="height:500px" class="center">';
       $(".initial_image").html(initial_image);
 
-      var final_image = '<img src="img/'+stim.image+'.jpg" style="height:500px" class="center">';
+      var version = Math.floor(Math.random() * 3) + 1;
+
+      var final_image = '<img src="img/'+stim.image+'_'+version+'.jpg" style="height:500px" class="center">';
       $(".final_image").html(final_image);
       
       var aud = document.getElementById("stim");
@@ -396,9 +422,17 @@ quarter_4 = [
   {sentence: "You got five of the gumballs.", image: "13", audio: "five.wav"}
 ];
 
+// deneme = [
+//   {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+//   {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+//   {sentence: "You got some gumballs.", image: "13", audio: "some.wav"}
+// ]
+
   //exp.stims =  _.shuffle(quarter_1); 
 
   exp.stims = _.shuffle(quarter_1).concat(_.shuffle(quarter_2),_.shuffle(quarter_3),_.shuffle(quarter_4));
+
+  //exp.stims = deneme;
 
   console.log(exp.stims.length);
 
@@ -412,7 +446,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["bot","bot2","i0", "check","instructions", "before_trial", "trial", 'subj_info', 'thanks'];
+  exp.structure=["bot", "i0", "check","instructions", "before_trial", "trial", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:

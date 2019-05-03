@@ -11,6 +11,7 @@
     <script src="shared/js/underscore-min.js"></script>
     <!-- if you want to draw stuff: -->
     <!-- <script src="shared/js/raphael-min.js"></script> -->
+    <script src="shared/js/uniqueturker.js"></script>
 
     <!-- cocolab experiment logic -->
     <script src="shared/js/exp-V2.js"></script>
@@ -33,25 +34,37 @@
 
     <!-- experiment file -->
     <script src="js/index.js"></script>
+    
+    <script type="text/JavaScript">
+    	$(document).ready(function(){
+	   	var ut_id = "35a1a045762b872be4cd6bbf1b4f1050";
+	   	if (UTWorkerLimitReached(ut_id)) {
+	    	$(".slide").hide();
+	    	$("body").html("You have already completed the maximum number of HITs allowed by this requester. Please click 'Return HIT' to avoid any impact on your approval rating.");
+		}});
+    </script>
 
 </head>
 
 <body onload="init();">
 	<noscript>This task requires JavaScript.</noscript>
-
-	<!-- ALL BOT STUFF STARTS HERE -->
-	<div class="slide" id="bot" >
-    	<button onclick="_s.button()">Continue</button>
-	</div>
-
-	<div class="slide" id="bot2" >
-    	<button onclick="_s.button()">Continue</button>
-	</div>
-
-	<!-- ALL BOT STUFF ENDS HERE -->
-
-
 	
+	<div class="slide" id="bot" >
+		<h3>Are you a bot?</h3>
+		<p id="s"></p>
+		<p id="q"></p>
+	
+		<input type="text" id="text_box"/></question>
+		<br><br><br>
+    	<button onclick="_s.button()">Continue</button>
+    	<div class="err1">
+    		<p2>Failing this question two more times will disqualify you from this study.</p2></div>
+    	<div class="err2">
+    		<p2>Failing this question one more time will disqualify you from this study.</p2></div>
+    	<div class="disq">
+    		<p2>You failed the question and you are disqualified.</p2></div>
+	</div>
+		
 	<div class="slide" id="i0" >
 		<img src="img/alps_lab.png" alt="Alps Lab"  style="width:400;height:192px;">
    		<p id="instruct-text">You will hear some sentences. Your job is to answer yes or no based on whether you agree with these sentences or not. You The HIT should take ~15 minutes. <br><br><strong>Please make sure that your computer is not muted and the volume is up.</strong></p>
