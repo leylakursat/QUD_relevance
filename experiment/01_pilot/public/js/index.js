@@ -1,6 +1,28 @@
 function make_slides(f) {
   var   slides = {};
 
+  //ALL BOT STUFF STARTS HERE
+
+  slides.bot = slide({
+    name : "bot",
+    start: function() {
+    },
+    button : function() {
+      exp.go()
+    }
+  });
+   
+  slides.bot2 = slide({
+    name : "bot2",
+    start: function() {
+    },
+    button : function() {
+      exp.go()
+    }
+  });
+
+  //ALL BOT STUFF STARTS HERE
+
   slides.i0 = slide({
     name : "i0",
     start: function() {
@@ -131,33 +153,34 @@ function make_slides(f) {
             $('.err_empty').show();
           }
           if(this.radio == "Empty"){
-            //this.log_responses();                                                      // FIX THIS!!!!!!!!!!
+            // not great, this.log_response(); - out of scope
+            exp.data_trials.push({
+              "slide_number": exp.phase,
+              "slide_type" : "comprehension_check",
+              "image" : "",
+              "audio" : "",
+              "response" : [0,this.radio]
+            });
             exp.go();  
           }
           if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
             $('.comprehension').hide();
             $('.err_wrong').show();
-            //this.log_responses();                                                      // FIX THIS!!!!!!!!!!
+            exp.data_trials.push({
+              "slide_number": exp.phase,
+              "slide_type" : "comprehension_check",
+              "image" : "",
+              "audio" : "",
+              "response" : [0,this.radio]
+            });
           }
         }
         if (($('.err_wrong').is(":visible")) && (e.keyCode == 32)) {
             $('.err_wrong').hide();
             $('.tut_instructions').show();
         }
-        
       }
     },
-
-    log_responses : function() {
-      exp.data_trials.push({
-          "slide_number": exp.phase,
-          "slide_type" : "comprehension_check",
-          //"stim" : "",
-          "image" : "",
-          "audio" : "",
-          "response" : [0,this.radio]
-      });
-    }
   });
   
   slides.before_trial = slide({
@@ -195,21 +218,20 @@ function make_slides(f) {
       aud.src = "audio/"+stim.audio;
       aud.load();
       
-      console.log("Beginning of trial, TIME: " + (Date.now()-exp.test_start));                       // TESTING
-      //console.log(stim.image);                                                                     // TESTING
-      //console.log(stim.audio);                                                                     // TESTING
+      console.log("BEGINNING OF TRIAL, TIME: " + (Date.now()-exp.test_start));                       // TESTING
+      console.log("image: "+stim.image);                                                                     // TESTING
+      console.log("audio: "+stim.audio);                                                                     // TESTING
   
       setTimeout(function(){
         $('.initial_gumball').hide();
         document.getElementById("kaching").play();
         $('.final_gumball').show();
-        console.log("Gumball image changed, TIME: " + (Date.now()-exp.test_start));                  // TESTING
+        console.log("IMAGE CHANGED, TIME: " + (Date.now()-exp.test_start));                  // TESTING
         setTimeout(function(){
           aud.play(); 
-          console.log("Gumball audio played, TIME: " + (Date.now()-exp.test_start));                 // TESTING
-          //console.log(document.getElementById("stim"));                                            // TESTING
+          console.log("AUDIO PLAYED, TIME: " + (Date.now()-exp.test_start));                 // TESTING
           exp.startTime = Date.now();
-          console.log("Timer started, TIME: " + (Date.now()-exp.test_start));                        // TESTING
+          console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
         },1000)
       },2000)
       
@@ -218,14 +240,12 @@ function make_slides(f) {
         e = e || window.event;
         if (($('.final_gumball').is(":visible")) && (e.keyCode == 70 || e.keyCode == 74)) {
           exp.responseTime = Date.now()-exp.startTime;
-          console.log("Timer ended, TIME: " + (Date.now()-exp.test_start));
-          console.log("Response time: "+  exp.responseTime);                                         // TESTING
-          // if(e.keyCode == 74)
-          //   exp.KeyCode = "Yes";
-          // if(e.keyCode == 70)
-          //   exp.KeyCode = "No";
-          //console.log(exp.KeyCode);
-          exp.keyCode = e.keyCode;
+          console.log("TIMER ENDED, TIME: " + (Date.now()-exp.test_start));
+          console.log("RESPONSE TIME: "+  exp.responseTime);                                         // TESTING
+          if(e.keyCode == 74)
+            exp.keyCode = "Yes";
+          if(e.keyCode == 70)
+            exp.keyCode = "No";   
           $('.final_gumball').hide();
           $('.transition').show();
           aud.pause();
@@ -376,9 +396,9 @@ quarter_4 = [
   {sentence: "You got five of the gumballs.", image: "13", audio: "five.wav"}
 ];
 
-  exp.stims =  _.shuffle(quarter_1); 
+  //exp.stims =  _.shuffle(quarter_1); 
 
-  //_.shuffle(quarter_1)+_.shuffle(quarter_2)+_.shuffle(quarter_3)+_.shuffle(quarter_4);
+  exp.stims = _.shuffle(quarter_1).concat(_.shuffle(quarter_2),_.shuffle(quarter_3),_.shuffle(quarter_4));
 
   console.log(exp.stims.length);
 
@@ -392,7 +412,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["i0", "check","instructions", "before_trial", "trial", 'subj_info', 'thanks'];
+  exp.structure=["bot","bot2","i0", "check","instructions", "before_trial", "trial", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:
