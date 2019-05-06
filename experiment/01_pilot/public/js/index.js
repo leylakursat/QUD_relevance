@@ -1,51 +1,57 @@
 function make_slides(f) {
   var   slides = {};
 
-  //ALL BOT STUFF STARTS HERE
-
   slides.bot = slide({
     name : "bot",
     start: function() {
       $('.err1').hide();
       $('.err2').hide();
       $('.disq').hide();
-
       exp.speaker = _.shuffle(["James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles"])[0];
       exp.listener = _.shuffle(["Mary", "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Margaret"])[0];
       exp.lives = 0;
-
       var story = exp.speaker + ' says to ' + exp.listener + ': "It\'s a beautiful day, isn\'t it?"'
       var question = 'Who does ' + exp.speaker + ' talk to?';
-     
       document.getElementById("s").innerHTML = story;
       document.getElementById("q").innerHTML = question;
     },
     button : function() {
-      var answer = document.getElementById("text_box").value;
+      exp.text_input = document.getElementById("text_box").value;
       var lower = exp.listener.toLowerCase();
       var upper = exp.listener.toUpperCase();
 
-      if ((exp.lives < 3) && ((answer == exp.listener)|(answer == lower) | (answer == upper))){
+      if ((exp.lives < 3) && ((exp.text_input == exp.listener)|(exp.text_input == lower) | (exp.text_input== upper))){
+        exp.data_trials.push({
+          "slide_number": exp.phase,
+          "slide_type" : "bot_check",
+          "image" : exp.listener,
+          "audio" : "",
+          "response" : [0,exp.text_input]
+        });
         exp.go();
       }
       else {
+        exp.data_trials.push({
+          "slide_number": exp.phase,
+          "slide_type" : "bot_check",
+          "image" : exp.listener,
+          "audio" : "",
+          "response" : [0,exp.text_input]
+        });
         if (exp.lives == 0){
           $('.err1').show();
-        }
-        if (exp.lives == 1){
+        }if (exp.lives == 1){
           $('.err1').hide();
           $('.err2').show();
-        }
-        if (exp.lives == 2){
+        }if (exp.lives == 2){
           $('.err2').hide();
           $('.disq').show();
+          $('.button').hide();
         }
         exp.lives++;
       } 
-    }
+    },
   });
-   
-  //ALL BOT STUFF STARTS HERE
 
   slides.i0 = slide({
     name : "i0",
@@ -79,7 +85,6 @@ function make_slides(f) {
       exp.data_trials.push({
           "slide_number": exp.phase,
           "slide_type" : "audio_check",
-          //"stim" : "",
           "image" : "",
           "audio" : "",
           "response" : [0,this.radio]
@@ -180,7 +185,7 @@ function make_slides(f) {
             // not great, this.log_response(); - out of scope
             exp.data_trials.push({
               "slide_number": exp.phase,
-              "slide_type" : "comprehension_check",
+              "slide_type" : "comprehension_check_1",
               "image" : "",
               "audio" : "",
               "response" : [0,this.radio]
@@ -190,9 +195,10 @@ function make_slides(f) {
           if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
             $('.comprehension').hide();
             $('.err_wrong').show();
+            $('input[name="fired"]').prop('checked', false);
             exp.data_trials.push({
               "slide_number": exp.phase,
-              "slide_type" : "comprehension_check",
+              "slide_type" : "comprehension_check_1",
               "image" : "",
               "audio" : "",
               "response" : [0,this.radio]
@@ -207,6 +213,90 @@ function make_slides(f) {
     },
   });
   
+  slides.before_practice = slide({
+    name : "before_practice",
+    start : function() {
+      document.onkeydown = checkKey;
+      function checkKey(e) {
+        e = e || window.event;
+        if (e.keyCode == 32) 
+          exp.go();
+      }
+    }
+  });
+
+  slides.practice = slide({
+    name : "practice",
+    present: exp.practice, 
+
+    present_handle : function(stim) {                                                         
+      exp.practicestartTime = 0;
+      this.stim = stim;
+
+      $('.final_gumball').hide();
+      $('.transition').hide();
+      $('.initial_gumball').show();
+
+      var initial_image = '<img src="img/initial.jpg" style="height:500px" class="center">';
+      $(".initial_image").html(initial_image);
+      var version = Math.floor(Math.random() * 3) + 1;
+      var final_image = '<img src="img/'+stim.image+'_'+version+'.jpg" style="height:500px" class="center">';
+      $(".final_image").html(final_image);
+      var aud = document.getElementById("stim");
+      aud.src = "audio/"+stim.audio;
+      aud.load();
+ 
+      setTimeout(function(){
+        $('.initial_gumball').hide();
+        document.getElementById("kaching").play();
+        $('.final_gumball').show();
+        setTimeout(function(){
+          aud.play(); 
+          exp.practicestartTime = Date.now();
+        },1000)
+      },2000)
+      
+      document.onkeydown = checkKey;
+      function checkKey(e) {
+        e = e || window.event;
+        if (($('.final_gumball').is(":visible")) && (e.keyCode == 70 || e.keyCode == 74)) {
+          exp.responseTime = Date.now()-exp.practicestartTime;
+          if(e.keyCode == 74)
+            exp.keyCode = "Yes";
+          if(e.keyCode == 70)
+            exp.keyCode = "No";   
+          $('.final_gumball').hide();
+          $('.transition').show();
+          aud.pause();
+          aud.currentTime = 0;
+        } 
+        if (($('.warning_all').is(":visible")) && (e.keyCode == 32)) {
+          e.keyCode =0;
+          $('.warning_all').hide();
+          $('.transition').show();
+        }
+        if (($('.transition').is(":visible")) && (e.keyCode == 32)) {
+          _s.button();
+        }
+      }
+    },
+
+    button : function() {
+      this.log_responses();
+      _stream.apply(this);
+    },
+
+    log_responses : function() {
+      exp.data_trials.push({
+          "slide_number": exp.phase,
+          "slide_type" : "practice_trial",
+          "image" : this.stim.image,
+          "audio" : this.stim.audio,
+          "response" : [exp.responseTime, exp.keyCode]
+      });
+    }
+  });
+
   slides.before_trial = slide({
     name : "before_trial",
     start : function() {
@@ -219,12 +309,11 @@ function make_slides(f) {
     }
   });
 
-  slides.trial = slide({
-    name : "trial",
-    present: exp.stims, //every element in exp.stims is passed to present_handle one by one as 'stim'
-
+  slides.trial1 = slide({
+    name : "trial1",
+    present: exp.stims,
     present_handle : function(stim) {
-      exp.test_start = Date.now();                                                                 // TESTING
+      exp.test_start = Date.now();                                                                  // TESTING
       exp.startTime = 0;
       this.stim = stim;
 
@@ -234,28 +323,25 @@ function make_slides(f) {
 
       var initial_image = '<img src="img/initial.jpg" style="height:500px" class="center">';
       $(".initial_image").html(initial_image);
-
       var version = Math.floor(Math.random() * 3) + 1;
-
       var final_image = '<img src="img/'+stim.image+'_'+version+'.jpg" style="height:500px" class="center">';
       $(".final_image").html(final_image);
-      
       var aud = document.getElementById("stim");
       aud.src = "audio/"+stim.audio;
       aud.load();
       
       console.log("BEGINNING OF TRIAL, TIME: " + (Date.now()-exp.test_start));                       // TESTING
-      console.log("image: "+stim.image);                                                                     // TESTING
-      console.log("audio: "+stim.audio);                                                                     // TESTING
+      console.log("image: "+stim.image);                                                             // TESTING
+      console.log("audio: "+stim.audio);                                                             // TESTING
   
       setTimeout(function(){
         $('.initial_gumball').hide();
         document.getElementById("kaching").play();
         $('.final_gumball').show();
-        console.log("IMAGE CHANGED, TIME: " + (Date.now()-exp.test_start));                  // TESTING
+        console.log("IMAGE CHANGED, TIME: " + (Date.now()-exp.test_start));                          // TESTING
         setTimeout(function(){
           aud.play(); 
-          console.log("AUDIO PLAYED, TIME: " + (Date.now()-exp.test_start));                 // TESTING
+          console.log("AUDIO PLAYED, TIME: " + (Date.now()-exp.test_start));                         // TESTING
           exp.startTime = Date.now();
           console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
         },1000)
@@ -289,8 +375,126 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial",
-        //  "stim" : this.stim.sentence,
+          "slide_type" : "critical_trial_1",
+          "image" : this.stim.image,
+          "audio" : this.stim.audio,
+          "response" : [exp.responseTime, exp.keyCode]
+      });
+    }
+  });
+
+  slides.comprehension = slide({
+    name : "comprehension",
+    start : function() {
+      $('.err_empty').hide();
+      $('.err_show').hide();
+      $('.quiz').show();
+      document.onkeydown = checkKey;
+      function checkKey(e) {
+        e = e || window.event;
+        if (($('.quiz').is(":visible"))&(e.keyCode == 32)) {
+          this.radio = $("input[name='fired']:checked").val();
+          if (this.radio == undefined) {
+            $('.err_empty').show();
+          }
+          if(this.radio == "Empty") {
+            exp.data_trials.push({
+              "slide_number": exp.phase,
+              "slide_type" : "comprehension_check_2",
+              "image" : "",
+              "audio" : "",
+              "response" : [0,this.radio]
+              });
+            exp.go();
+          }
+          if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+            $('.quiz').hide();
+            $('.err_wrong').show();
+            $('input[name="fired"]').prop('checked', false);
+            exp.data_trials.push({
+              "slide_number": exp.phase,
+              "slide_type" : "comprehension_check_2",
+              "image" : "",
+              "audio" : "",
+              "response" : [0,this.radio]
+              });
+          }
+        }
+        if (($('.err_wrong').is(":visible"))&(e.keyCode == 32)){
+            $('.err_empty').hide();
+            $('.quiz').show();
+        } 
+      }
+    }
+  });
+
+    slides.trial2 = slide({
+    name : "trial2",
+    present: exp.stims2, //every element in exp.stims is passed to present_handle one by one as 'stim'
+    present_handle : function(stim) {
+      exp.test_start = Date.now();                                                                  // TESTING
+      exp.startTime = 0;
+      this.stim = stim;
+
+      $('.final_gumball').hide();
+      $('.transition').hide();
+      $('.initial_gumball').show()
+
+      var initial_image = '<img src="img/initial.jpg" style="height:500px" class="center">';
+      $(".initial_image").html(initial_image);
+      var version = Math.floor(Math.random() * 3) + 1;
+      var final_image = '<img src="img/'+stim.image+'_'+version+'.jpg" style="height:500px" class="center">';
+      $(".final_image").html(final_image);
+      var aud = document.getElementById("stim");
+      aud.src = "audio/"+stim.audio;
+      aud.load();
+      
+      console.log("BEGINNING OF TRIAL, TIME: " + (Date.now()-exp.test_start));                       // TESTING
+      console.log("image: "+stim.image);                                                             // TESTING
+      console.log("audio: "+stim.audio);                                                             // TESTING
+  
+      setTimeout(function(){
+        $('.initial_gumball').hide();
+        document.getElementById("kaching").play();
+        $('.final_gumball').show();
+        console.log("IMAGE CHANGED, TIME: " + (Date.now()-exp.test_start));                          // TESTING
+        setTimeout(function(){
+          aud.play(); 
+          console.log("AUDIO PLAYED, TIME: " + (Date.now()-exp.test_start));                         // TESTING
+          exp.startTime = Date.now();
+          console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
+        },1000)
+      },2000)
+      
+      document.onkeydown = checkKey;
+      function checkKey(e) {
+        e = e || window.event;
+        if (($('.final_gumball').is(":visible")) && (e.keyCode == 70 || e.keyCode == 74)) {
+          exp.responseTime = Date.now()-exp.startTime;
+          console.log("TIMER ENDED, TIME: " + (Date.now()-exp.test_start));
+          console.log("RESPONSE TIME: "+  exp.responseTime);                                         // TESTING
+          if(e.keyCode == 74)
+            exp.keyCode = "Yes";
+          if(e.keyCode == 70)
+            exp.keyCode = "No";   
+          $('.final_gumball').hide();
+          $('.transition').show();
+          aud.pause();
+          aud.currentTime = 0;
+        } 
+        if (($('.transition').is(":visible")) && (e.keyCode == 32)) {
+          _s.button();
+        }
+      }
+    },
+    button : function() {
+      this.log_responses();
+      _stream.apply(this);
+    },
+    log_responses : function() {
+      exp.data_trials.push({
+          "slide_number": exp.phase,
+          "slide_type" : "critical_trial_2",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -422,19 +626,22 @@ quarter_4 = [
   {sentence: "You got five of the gumballs.", image: "13", audio: "five.wav"}
 ];
 
-// deneme = [
-//   {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-//   {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-//   {sentence: "You got some gumballs.", image: "13", audio: "some.wav"}
-// ]
-
   //exp.stims =  _.shuffle(quarter_1); 
 
-  exp.stims = _.shuffle(quarter_1).concat(_.shuffle(quarter_2),_.shuffle(quarter_3),_.shuffle(quarter_4));
+  exp.stims = _.shuffle(quarter_1).concat(_.shuffle(quarter_2));
+  exp.stims2 = _.shuffle(quarter_3).concat(_.shuffle(quarter_4));
+  
+  exp.practice = [
+    {sentence: "You got none of the gumballs.", image: "13", audio: "none.wav"},
+    {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
+    {sentence: "You got all of the gumballs.", image: "0", audio: "all.wav"},
+    {sentence: "You got none of the gumballs.", image: "0", audio: "none.wav"}
+  ]
 
   //exp.stims = deneme;
 
   console.log(exp.stims.length);
+   console.log(exp.stims2.length);
 
   exp.system = {
       Browser : BrowserDetect.browser,
@@ -446,7 +653,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["bot", "i0", "check","instructions", "before_trial", "trial", 'subj_info', 'thanks'];
+  exp.structure=["bot", "i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "comprehension", "trial2", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:
