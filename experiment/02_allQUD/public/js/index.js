@@ -375,7 +375,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial_1",
+          "slide_type" : "trial_1",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -494,7 +494,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial_2",
+          "slide_type" : "trial_2",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -543,7 +543,7 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
 
-  exp.condition = "no QUD";
+  exp.condition = "all_QUD";
 
 quarter_1 =[
   {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
@@ -641,7 +641,7 @@ quarter_4 = [
   //exp.stims = deneme;
 
   console.log(exp.stims.length);
-  console.log(exp.stims2.length);
+   console.log(exp.stims2.length);
 
   exp.system = {
       Browser : BrowserDetect.browser,

@@ -164,51 +164,52 @@ function make_slides(f) {
           document.getElementById("tut_stim2").currentTime = 0;
         }
         if (($('.tut_disagreed').is(":visible")) && (e.keyCode == 32)) {
-          e = 0;
-          $('.tut_disagreed').hide();
-          $('.tut_warning').show();
+          exp.go()
+          // e = 0;
+          // $('.tut_disagreed').hide();
+          // $('.tut_warning').show();
         }
-        if (($('.tut_warning').is(":visible")) && (e.keyCode == 32)) {
-          e = 0;
-          $('.tut_warning').hide();
-          $('.comprehension').show();
-          $('.err_empty').hide();
-          $("input[name='fired']:checked").val = undefined;
-        }
-        if (($('.comprehension').is(":visible")) && (e.keyCode == 32)) {
-          e = 0;
-          this.radio = $("input[name='fired']:checked").val();
-          if (this.radio == undefined) {
-            $('.err_empty').show();
-          }
-          if(this.radio == "Empty"){
-            // not great, this.log_response(); - out of scope
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_1",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-            });
-            exp.go();  
-          }
-          if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
-            $('.comprehension').hide();
-            $('.err_wrong').show();
-            $('input[name="fired"]').prop('checked', false);
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_1",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-            });
-          }
-        }
-        if (($('.err_wrong').is(":visible")) && (e.keyCode == 32)) {
-            $('.err_wrong').hide();
-            $('.tut_instructions').show();
-        }
+        // if (($('.tut_warning').is(":visible")) && (e.keyCode == 32)) {
+        //   e = 0;
+        //   $('.tut_warning').hide();
+        //   $('.comprehension').show();
+        //   $('.err_empty').hide();
+        //   $("input[name='fired']:checked").val = undefined;
+        // }
+        // if (($('.comprehension').is(":visible")) && (e.keyCode == 32)) {
+        //   e = 0;
+        //   this.radio = $("input[name='fired']:checked").val();
+        //   if (this.radio == undefined) {
+        //     $('.err_empty').show();
+        //   }
+        //   if(this.radio == "Empty"){
+        //     // not great, this.log_response(); - out of scope
+        //     exp.data_trials.push({
+        //       "slide_number": exp.phase,
+        //       "slide_type" : "comprehension_check_1",
+        //       "image" : "",
+        //       "audio" : "",
+        //       "response" : [0,this.radio]
+        //     });
+        //     exp.go();  
+        //   }
+        //   if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+        //     $('.comprehension').hide();
+        //     $('.err_wrong').show();
+        //     $('input[name="fired"]').prop('checked', false);
+        //     exp.data_trials.push({
+        //       "slide_number": exp.phase,
+        //       "slide_type" : "comprehension_check_1",
+        //       "image" : "",
+        //       "audio" : "",
+        //       "response" : [0,this.radio]
+        //     });
+        //   }
+        // }
+        // if (($('.err_wrong').is(":visible")) && (e.keyCode == 32)) {
+        //     $('.err_wrong').hide();
+        //     $('.tut_instructions').show();
+        // }
       }
     },
   });
@@ -375,7 +376,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial_1",
+          "slide_type" : "trial_1",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -383,50 +384,50 @@ function make_slides(f) {
     }
   });
 
-  slides.comprehension = slide({
-    name : "comprehension",
-    start : function() {
-      $('.err_empty').hide();
-      $('.err_show').hide();
-      $('.quiz').show();
-      document.onkeydown = checkKey;
-      function checkKey(e) {
-        e = e || window.event;
-        if (($('.quiz').is(":visible"))&(e.keyCode == 32)) {
-          this.radio = $("input[name='fired']:checked").val();
-          if (this.radio == undefined) {
-            $('.err_empty').show();
-          }
-          if(this.radio == "Empty") {
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_2",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-              });
-            exp.go();
-          }
-          if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
-            $('.quiz').hide();
-            $('.err_wrong').show();
-            $('input[name="fired"]').prop('checked', false);
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_2",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-              });
-          }
-        }
-        if (($('.err_wrong').is(":visible"))&(e.keyCode == 32)){
-            $('.err_empty').hide();
-            $('.quiz').show();
-        } 
-      }
-    }
-  });
+  // slides.comprehension = slide({
+  //   name : "comprehension",
+  //   start : function() {
+  //     $('.err_empty').hide();
+  //     $('.err_show').hide();
+  //     $('.quiz').show();
+  //     document.onkeydown = checkKey;
+  //     function checkKey(e) {
+  //       e = e || window.event;
+  //       if (($('.quiz').is(":visible"))&(e.keyCode == 32)) {
+  //         this.radio = $("input[name='fired']:checked").val();
+  //         if (this.radio == undefined) {
+  //           $('.err_empty').show();
+  //         }
+  //         if(this.radio == "Empty") {
+  //           exp.data_trials.push({
+  //             "slide_number": exp.phase,
+  //             "slide_type" : "comprehension_check_2",
+  //             "image" : "",
+  //             "audio" : "",
+  //             "response" : [0,this.radio]
+  //             });
+  //           exp.go();
+  //         }
+  //         if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+  //           $('.quiz').hide();
+  //           $('.err_wrong').show();
+  //           $('input[name="fired"]').prop('checked', false);
+  //           exp.data_trials.push({
+  //             "slide_number": exp.phase,
+  //             "slide_type" : "comprehension_check_2",
+  //             "image" : "",
+  //             "audio" : "",
+  //             "response" : [0,this.radio]
+  //             });
+  //         }
+  //       }
+  //       if (($('.err_wrong').is(":visible"))&(e.keyCode == 32)){
+  //           $('.err_empty').hide();
+  //           $('.quiz').show();
+  //       } 
+  //     }
+  //   }
+  // });
 
     slides.trial2 = slide({
     name : "trial2",
@@ -494,7 +495,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial_2",
+          "slide_type" : "trial_2",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -543,7 +544,7 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
 
-  exp.condition = "no QUD";
+  exp.condition = "no_QUD";
 
 quarter_1 =[
   {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
@@ -653,7 +654,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["bot", "i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "comprehension", "trial2", 'subj_info', 'thanks'];
+  exp.structure=["bot", "i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "trial2", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:

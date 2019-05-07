@@ -181,7 +181,7 @@ function make_slides(f) {
           if (this.radio == undefined) {
             $('.err_empty').show();
           }
-          if(this.radio == "Empty"){
+          if(this.radio == "Jam"){
             // not great, this.log_response(); - out of scope
             exp.data_trials.push({
               "slide_number": exp.phase,
@@ -192,7 +192,7 @@ function make_slides(f) {
             });
             exp.go();  
           }
-          if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+          if ((this.radio == "Empty")| (this.radio == "Explode")| (this.radio == "Silent")){
             $('.comprehension').hide();
             $('.err_wrong').show();
             $('input[name="fired"]').prop('checked', false);
@@ -375,7 +375,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial_1",
+          "slide_type" : "trial_1",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -397,7 +397,7 @@ function make_slides(f) {
           if (this.radio == undefined) {
             $('.err_empty').show();
           }
-          if(this.radio == "Empty") {
+          if(this.radio == "Jam") {
             exp.data_trials.push({
               "slide_number": exp.phase,
               "slide_type" : "comprehension_check_2",
@@ -407,7 +407,7 @@ function make_slides(f) {
               });
             exp.go();
           }
-          if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+          if ((this.radio == "Empty")| (this.radio == "Explode")| (this.radio == "Silent")){
             $('.quiz').hide();
             $('.err_wrong').show();
             $('input[name="fired"]').prop('checked', false);
@@ -494,7 +494,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
           "slide_number": exp.phase,
-          "slide_type" : "critical_trial_2",
+          "slide_type" : "trial_2",
           "image" : this.stim.image,
           "audio" : this.stim.audio,
           "response" : [exp.responseTime, exp.keyCode]
@@ -543,7 +543,7 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
 
-  exp.condition = "no QUD";
+  exp.condition = "any_QUD";
 
 quarter_1 =[
   {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
