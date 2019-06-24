@@ -254,9 +254,11 @@ function make_slides(f) {
           aud.play(); 
           exp.practicestartTime = Date.now();
           setTimeout(function(){
-          	if (($('.final_gumball').is(":visible"))){
+          	if (($('.final_gumball').is(":visible")) && (Date.now()-exp.practicestartTime<10000)){
 	          	exp.keyCode = "Late";
 	          	exp.responseTime = Date.now()-exp.practicestartTime;
+              document.getElementById("critical_stop").play();
+              console.log("Late: " + exp.responseTime);
           		$('.final_gumball').hide();
 	          	$('.transition').show();
 	         }
@@ -269,6 +271,7 @@ function make_slides(f) {
         e = e || window.event;
         if (($('.final_gumball').is(":visible")) && (e.keyCode == 70 || e.keyCode == 74)) {
           exp.responseTime = Date.now()-exp.practicestartTime;
+          console.log("Not Late: " + exp.responseTime);
           if(e.keyCode == 74)
             exp.keyCode = "Yes";
           if(e.keyCode == 70)
@@ -353,7 +356,8 @@ function make_slides(f) {
           exp.startTime = Date.now();
           console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
           setTimeout(function(){
-          	if (($('.final_gumball').is(":visible"))){
+          	if (($('.final_gumball').is(":visible")) && (Date.now()-exp.startTime<10000)){
+              document.getElementById("critical_stop").play();
           		console.log("4 SECONDS PASSED, TIME: " + (Date.now()-exp.test_start));               // TESTING
 	          	exp.keyCode = "Late";
 	          	exp.responseTime = Date.now()-exp.startTime;
@@ -482,8 +486,9 @@ function make_slides(f) {
           exp.startTime = Date.now();
           console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
           setTimeout(function(){
-          	if (($('.final_gumball').is(":visible"))){
-          		console.log("4 SECONDS PASSED, TIME: " + (Date.now()-exp.test_start));               // TESTING
+          	if (($('.final_gumball').is(":visible")) && (Date.now()-exp.startTime<10000)){
+          		console.log("4 SECONDS PASSED, TIME: " + (Date.now()-exp.test_start));
+              document.getElementById("critical_stop").play();               // TESTING
 	          	exp.keyCode = "Late";
 	          	exp.responseTime = Date.now()-exp.startTime;
           		$('.final_gumball').hide();
@@ -573,10 +578,10 @@ function init() {
   exp.condition = "all_QUD";
 
 quarter_1 =[
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "8", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav" },
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav" },
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "8", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
   {sentence: "You got all of the gumballs.", image: "2", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -593,10 +598,10 @@ quarter_1 =[
   {sentence: "You got eight of the gumballs.", image: "13", audio: "eight.wav"}
 ];
 quarter_2 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs. ", image: "5", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs. ", image: "5", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -613,10 +618,10 @@ quarter_2 = [
   {sentence: "You got seven of the gumballs.", image: "11", audio: "seven.wav"}
 ];
 quarter_3 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "2", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "2", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "8", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -633,10 +638,10 @@ quarter_3 = [
   {sentence: "You got ten of the gumballs.", image: "13", audio: "ten.wav"}
 ];
 quarter_4 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "11", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "11", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs. ", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},

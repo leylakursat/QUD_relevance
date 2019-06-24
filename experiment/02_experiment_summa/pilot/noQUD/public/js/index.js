@@ -547,10 +547,10 @@ function init() {
   exp.condition = "no_QUD";
 
 quarter_1 =[
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "8", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav" },
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav" },
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "8", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
   {sentence: "You got all of the gumballs.", image: "2", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -567,10 +567,10 @@ quarter_1 =[
   {sentence: "You got eight of the gumballs.", image: "13", audio: "eight.wav"}
 ];
 quarter_2 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs. ", image: "5", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs. ", image: "5", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -587,10 +587,10 @@ quarter_2 = [
   {sentence: "You got seven of the gumballs.", image: "11", audio: "seven.wav"}
 ];
 quarter_3 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "2", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "2", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "8", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -607,10 +607,10 @@ quarter_3 = [
   {sentence: "You got ten of the gumballs.", image: "13", audio: "ten.wav"}
 ];
 quarter_4 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "11", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "11", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs. ", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},

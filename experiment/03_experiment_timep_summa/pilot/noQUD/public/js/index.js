@@ -164,51 +164,52 @@ function make_slides(f) {
           document.getElementById("tut_stim2").currentTime = 0;
         }
         if (($('.tut_disagreed').is(":visible")) && (e.keyCode == 32)) {
-          e = 0;
-          $('.tut_disagreed').hide();
-          $('.tut_warning').show();
+          exp.go()
+          // e = 0;
+          // $('.tut_disagreed').hide();
+          // $('.tut_warning').show();
         }
-        if (($('.tut_warning').is(":visible")) && (e.keyCode == 32)) {
-          e = 0;
-          $('.tut_warning').hide();
-          $('.comprehension').show();
-          $('.err_empty').hide();
-          $("input[name='fired']:checked").val = undefined;
-        }
-        if (($('.comprehension').is(":visible")) && (e.keyCode == 32)) {
-          e = 0;
-          this.radio = $("input[name='fired']:checked").val();
-          if (this.radio == undefined) {
-            $('.err_empty').show();
-          }
-          if(this.radio == "Jam"){
-            // not great, this.log_response(); - out of scope
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_1",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-            });
-            exp.go();  
-          }
-          if ((this.radio == "Empty")| (this.radio == "Explode")| (this.radio == "Silent")){
-            $('.comprehension').hide();
-            $('.err_wrong').show();
-            $('input[name="fired"]').prop('checked', false);
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_1",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-            });
-          }
-        }
-        if (($('.err_wrong').is(":visible")) && (e.keyCode == 32)) {
-            $('.err_wrong').hide();
-            $('.tut_instructions').show();
-        }
+        // if (($('.tut_warning').is(":visible")) && (e.keyCode == 32)) {
+        //   e = 0;
+        //   $('.tut_warning').hide();
+        //   $('.comprehension').show();
+        //   $('.err_empty').hide();
+        //   $("input[name='fired']:checked").val = undefined;
+        // }
+        // if (($('.comprehension').is(":visible")) && (e.keyCode == 32)) {
+        //   e = 0;
+        //   this.radio = $("input[name='fired']:checked").val();
+        //   if (this.radio == undefined) {
+        //     $('.err_empty').show();
+        //   }
+        //   if(this.radio == "Empty"){
+        //     // not great, this.log_response(); - out of scope
+        //     exp.data_trials.push({
+        //       "slide_number": exp.phase,
+        //       "slide_type" : "comprehension_check_1",
+        //       "image" : "",
+        //       "audio" : "",
+        //       "response" : [0,this.radio]
+        //     });
+        //     exp.go();  
+        //   }
+        //   if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+        //     $('.comprehension').hide();
+        //     $('.err_wrong').show();
+        //     $('input[name="fired"]').prop('checked', false);
+        //     exp.data_trials.push({
+        //       "slide_number": exp.phase,
+        //       "slide_type" : "comprehension_check_1",
+        //       "image" : "",
+        //       "audio" : "",
+        //       "response" : [0,this.radio]
+        //     });
+        //   }
+        // }
+        // if (($('.err_wrong').is(":visible")) && (e.keyCode == 32)) {
+        //     $('.err_wrong').hide();
+        //     $('.tut_instructions').show();
+        // }
       }
     },
   });
@@ -245,7 +246,7 @@ function make_slides(f) {
       var aud = document.getElementById("stim");
       aud.src = "audio/"+stim.audio;
       aud.load();
-
+ 
       setTimeout(function(){
         $('.initial_gumball').hide();
         document.getElementById("kaching").play();
@@ -254,15 +255,18 @@ function make_slides(f) {
           aud.play(); 
           exp.practicestartTime = Date.now();
           setTimeout(function(){
-            if (($('.final_gumball').is(":visible"))){
+            if (($('.final_gumball').is(":visible")) && (Date.now()-exp.practicestartTime<10000)){
               exp.keyCode = "Late";
               exp.responseTime = Date.now()-exp.practicestartTime;
+              document.getElementById("critical_stop").play();
+              console.log("Late: " + exp.responseTime);
               $('.final_gumball').hide();
               $('.transition').show();
            }
           },4000)
         },1000)
       },2000)
+
       
       document.onkeydown = checkKey;
       function checkKey(e) {
@@ -353,7 +357,8 @@ function make_slides(f) {
           exp.startTime = Date.now();
           console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
           setTimeout(function(){
-            if (($('.final_gumball').is(":visible"))){
+            if (($('.final_gumball').is(":visible")) && (Date.now()-exp.startTime<10000)){
+              document.getElementById("critical_stop").play();
               console.log("4 SECONDS PASSED, TIME: " + (Date.now()-exp.test_start));               // TESTING
               exp.keyCode = "Late";
               exp.responseTime = Date.now()-exp.startTime;
@@ -400,50 +405,50 @@ function make_slides(f) {
     }
   });
 
-  slides.comprehension = slide({
-    name : "comprehension",
-    start : function() {
-      $('.err_empty').hide();
-      $('.err_show').hide();
-      $('.quiz').show();
-      document.onkeydown = checkKey;
-      function checkKey(e) {
-        e = e || window.event;
-        if (($('.quiz').is(":visible"))&(e.keyCode == 32)) {
-          this.radio = $("input[name='fired']:checked").val();
-          if (this.radio == undefined) {
-            $('.err_empty').show();
-          }
-          if(this.radio == "Jam") {
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_2",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-              });
-            exp.go();
-          }
-          if ((this.radio == "Empty")| (this.radio == "Explode")| (this.radio == "Silent")){
-            $('.quiz').hide();
-            $('.err_wrong').show();
-            $('input[name="fired"]').prop('checked', false);
-            exp.data_trials.push({
-              "slide_number": exp.phase,
-              "slide_type" : "comprehension_check_2",
-              "image" : "",
-              "audio" : "",
-              "response" : [0,this.radio]
-              });
-          }
-        }
-        if (($('.err_wrong').is(":visible"))&(e.keyCode == 32)){
-            $('.err_empty').hide();
-            $('.quiz').show();
-        } 
-      }
-    }
-  });
+  // slides.comprehension = slide({
+  //   name : "comprehension",
+  //   start : function() {
+  //     $('.err_empty').hide();
+  //     $('.err_show').hide();
+  //     $('.quiz').show();
+  //     document.onkeydown = checkKey;
+  //     function checkKey(e) {
+  //       e = e || window.event;
+  //       if (($('.quiz').is(":visible"))&(e.keyCode == 32)) {
+  //         this.radio = $("input[name='fired']:checked").val();
+  //         if (this.radio == undefined) {
+  //           $('.err_empty').show();
+  //         }
+  //         if(this.radio == "Empty") {
+  //           exp.data_trials.push({
+  //             "slide_number": exp.phase,
+  //             "slide_type" : "comprehension_check_2",
+  //             "image" : "",
+  //             "audio" : "",
+  //             "response" : [0,this.radio]
+  //             });
+  //           exp.go();
+  //         }
+  //         if ((this.radio == "Jam")| (this.radio == "Explode")| (this.radio == "Silent")){
+  //           $('.quiz').hide();
+  //           $('.err_wrong').show();
+  //           $('input[name="fired"]').prop('checked', false);
+  //           exp.data_trials.push({
+  //             "slide_number": exp.phase,
+  //             "slide_type" : "comprehension_check_2",
+  //             "image" : "",
+  //             "audio" : "",
+  //             "response" : [0,this.radio]
+  //             });
+  //         }
+  //       }
+  //       if (($('.err_wrong').is(":visible"))&(e.keyCode == 32)){
+  //           $('.err_empty').hide();
+  //           $('.quiz').show();
+  //       } 
+  //     }
+  //   }
+  // });
 
     slides.trial2 = slide({
     name : "trial2",
@@ -470,7 +475,7 @@ function make_slides(f) {
       console.log("image: "+stim.image);                                                             // TESTING
       console.log("audio: "+stim.audio);                                                             // TESTING
   
-    setTimeout(function(){
+      setTimeout(function(){
         $('.initial_gumball').hide();
         document.getElementById("kaching").play();
         $('.final_gumball').show();
@@ -481,8 +486,9 @@ function make_slides(f) {
           exp.startTime = Date.now();
           console.log("TIMER STARTED, TIME: " + (Date.now()-exp.test_start));                        // TESTING
           setTimeout(function(){
-            if (($('.final_gumball').is(":visible"))){
-              console.log("4 SECONDS PASSED, TIME: " + (Date.now()-exp.test_start));               // TESTING
+            if (($('.final_gumball').is(":visible")) && (Date.now()-exp.startTime<10000)){
+              console.log("4 SECONDS PASSED, TIME: " + (Date.now()-exp.test_start));
+              document.getElementById("critical_stop").play();               // TESTING
               exp.keyCode = "Late";
               exp.responseTime = Date.now()-exp.startTime;
               $('.final_gumball').hide();
@@ -569,13 +575,13 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
 
-  exp.condition = "any_QUD";
+  exp.condition = "no_QUD";
 
 quarter_1 =[
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "8", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav" },
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav" },
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "8", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
   {sentence: "You got all of the gumballs.", image: "2", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -592,10 +598,10 @@ quarter_1 =[
   {sentence: "You got eight of the gumballs.", image: "13", audio: "eight.wav"}
 ];
 quarter_2 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs. ", image: "5", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs. ", image: "5", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -612,10 +618,10 @@ quarter_2 = [
   {sentence: "You got seven of the gumballs.", image: "11", audio: "seven.wav"}
 ];
 quarter_3 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "2", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "2", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "8", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -632,10 +638,10 @@ quarter_3 = [
   {sentence: "You got ten of the gumballs.", image: "13", audio: "ten.wav"}
 ];
 quarter_4 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "11", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "some.wav"},
+  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "11", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs. ", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -679,7 +685,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["bot", "i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "comprehension", "trial2", 'subj_info', 'thanks'];
+  exp.structure=["bot", "i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "trial2", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:
