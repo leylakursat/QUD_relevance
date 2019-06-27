@@ -546,10 +546,10 @@ function init() {
   exp.condition = "any_QUD";
 
 quarter_1 =[
-  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "8", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav" },
+  {sentence: "You got some of the gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "8", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav" },
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav" },
   {sentence: "You got all of the gumballs.", image: "2", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -561,21 +561,21 @@ quarter_1 =[
   {sentence: "You got two of the gumballs.", image: "2", audio: "two.wav"},
   {sentence: "You got four of the gumballs.", image: "5", audio: "four.wav"},
   {sentence: "You got eight of the gumballs.", image: "8", audio: "eight.wav"},
-  {sentence: "You got thirteen of the gumballs.", image: "8", audio: "thirteen.wav"},
+  {sentence: "You got thirteen of the gumballs.", image: "11", audio: "thirteen.wav"},
   {sentence: "You got eleven of the gumballs.", image: "8", audio: "eleven.wav"},
   {sentence: "You got eight of the gumballs.", image: "13", audio: "eight.wav"}
 ];
 quarter_2 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
-  {sentence: "You got some gumballs. ", image: "5", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs. ", image: "5", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
   {sentence: "You got none of the gumballs.", image: "0", audio: "none.wav"},
-  {sentence: "You got none of the gumballs.", image: "0", audio: "none.wav"},
+  {sentence: "You got none of the gumballs.", image: "11", audio: "none.wav"},
   {sentence: "You got eleven of the gumballs.", image: "0", audio: "eleven.wav"},
   {sentence: "You got two of the gumballs. ", image: "2", audio: "two.wav"},
   {sentence: "You got two of the gumballs.", image: "2", audio: "two.wav"},
@@ -586,10 +586,10 @@ quarter_2 = [
   {sentence: "You got seven of the gumballs.", image: "11", audio: "seven.wav"}
 ];
 quarter_3 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "2", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "2", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs.", image: "5", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "8", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
@@ -606,10 +606,10 @@ quarter_3 = [
   {sentence: "You got ten of the gumballs.", image: "13", audio: "ten.wav"}
 ];
 quarter_4 = [
-  {sentence: "You got some gumballs.", image: "0", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "11", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
-  {sentence: "You got some gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "0", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "11", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav"},
+  {sentence: "You got some of the gumballs.", image: "13", audio: "summa.wav"},
   {sentence: "You got all of the gumballs. ", image: "0", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "11", audio: "all.wav"},
   {sentence: "You got all of the gumballs.", image: "13", audio: "all.wav"},
