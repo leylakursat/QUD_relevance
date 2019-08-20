@@ -124,7 +124,6 @@ rt_dist = ggplot(trials, aes(x=logRT)) +
             geom_histogram(fill= hist_col) +
             xlab("log transformed response time") #+
             facet_wrap(~workerid, scale="free")
-            
 rt_dist
 
 #ggsave(rt_dist, file="../graphs/subject_rt_distributions.pdf",width=25,height=25)
