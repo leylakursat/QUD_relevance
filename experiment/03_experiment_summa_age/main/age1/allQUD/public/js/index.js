@@ -253,6 +253,7 @@ function make_slides(f) {
         setTimeout(function(){
           aud.play(); 
           exp.practicestartTime = Date.now();
+          console.log("audio played" + exp.practicestartTime);
         },1000)
       },2000)
 
@@ -261,6 +262,7 @@ function make_slides(f) {
         e = e || window.event;
         if (($('.final_gumball').is(":visible")) && (e.keyCode == 70 || e.keyCode == 74)) {
           exp.responseTime = Date.now()-exp.practicestartTime;
+          console.log("responded" + exp.responseTime);
           if(e.keyCode == 74)
             exp.keyCode = "Yes";
           if(e.keyCode == 70)
