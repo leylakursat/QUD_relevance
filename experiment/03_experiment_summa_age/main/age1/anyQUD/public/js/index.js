@@ -543,7 +543,7 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
 
-  exp.condition = "age2-anyQUD";
+  exp.condition = "age1-anyQUD";
 
 quarter_1 =[
   {sentence: "You got some of the gumballs.", image: "0", audio: "summa.wav"},
