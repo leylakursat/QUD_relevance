@@ -252,7 +252,7 @@ function make_slides(f) {
         $('.final_gumball').show();
         setTimeout(function(){
           aud.play(); 
-          exp.startTime = Date.now();
+          exp.practicestartTime = Date.now();
         },1000)
       },2000)
 
