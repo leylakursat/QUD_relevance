@@ -180,8 +180,8 @@ critical = df %>%
   filter(str_detect(image,"13")) %>%
   droplevels()
 
-length(unique(critical$workerid)) #120
-nrow(critical) #960 (120*8)
+length(unique(critical$workerid)) #120 122?
+nrow(critical) #960 (120*8) 976?
 
 #response type
 rtype = critical %>%
@@ -197,6 +197,8 @@ ggplot(rtype, aes(x = Answer.condition, y=Proportion)) +
   geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
   ylab("Proportion of semantic responses") #+
   mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD"))
+  
+#ggsave(prop, file="../graphs/semantic_prop.pdf",width=25,height=25)
 
 #trial1 vs trial2
 rtype = critical %>%
@@ -222,12 +224,12 @@ table(demo$age)
 rtype = critical %>%
   mutate(semantic = ifelse(key=="Yes",1,0)) %>%
   left_join(demo,by = c("workerid")) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=35,"31-35",ifelse(age<=40,"36-40",ifelse(age<=45,"41-45",ifelse(age>45,"45+", NA))))))) %>%
-  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>25,"25+",NA)))%>%
+  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=35,"31-35",ifelse(age<=40,"36-40",ifelse(age<=45,"41-45",ifelse(age>45,"45+", NA))))))) %>%
+  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>44,"45+",NA)))%>%
   group_by(Answer.condition,age_bucket) %>%
   summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic),count=n()) %>%
   ungroup() %>%
-  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) %>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) #%>%
   mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD"))
 
 age_judgement = ggplot(rtype, aes(x = Answer.condition, y=Proportion, fill=Answer.condition)) +
@@ -262,6 +264,8 @@ ggplot(d, aes(x=n,fill=Answer.condition)) +
   scale_x_continuous(breaks=c(0:8))+
   labs(fill = "QUD") #+
   facet_wrap(~key)
+  
+#ggsave(a, file="../graphs/dist_sem.pdf",width=40,height=20)
   
 #response time
 critical$rt = critical$logRT
@@ -346,8 +350,8 @@ mean_semanticity_rt
 #yes/no rt means with age
 agr3 = critical %>%
   merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=45,"31-45",ifelse(age>45,"45+", NA))))) %>%
-  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>25,"25+",NA))) %>%
+  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=44,"31-44",ifelse(age>44,"45+", NA))))) %>%
+  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>44,"45+",NA))) %>%
   group_by(Answer.condition,key,age_bucket) %>%
   summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
   ungroup() %>%
