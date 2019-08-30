@@ -1,8 +1,9 @@
 ---
 title: "Experiment 2: summa"
+#output: rmarkdown::github_document
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -105,18 +106,20 @@ comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$Answer.condition==
 comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
 
 #table(comp1_fail$workerid)
-table(comp2_fail$workerid)
+#table(comp2_fail$workerid)
 
 comp2_fail =  comp2_fail %>%
   group_by(workerid) %>%
   count() %>%
   filter(n>1)
 
+comp2_fail
+
 df = df[!(df$workerid %in% comp2_fail$workerid ),]
 ```
 **Participants with accuracy of lower than 85% on non-critical trials:**
 ```{r accuracy_exclude, echo=FALSE}
-yes_list = c("some2","some5","some8","some11",
+yes_list = c("summa2","summa5","summa8","summa11",
              "all13",
              "none0",
              "zero0","two2","five5","eight8","eleven11","thirteen13")
@@ -125,7 +128,7 @@ accuracy = df %>%
   filter(str_detect(slide_type,"trial")) %>% 
   filter(str_detect(slide_type,"practice", negate = TRUE)) %>%
   mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
-  filter(str_detect(concat,"some13", negate = TRUE)) %>%
+  filter(str_detect(concat,"summa13", negate = TRUE)) %>%
   mutate(rightAnswer = ifelse(concat %in% yes_list,"Yes","No")) %>%
   mutate(gaveRightAnswer = ifelse(key==rightAnswer,"1","0"))
 
@@ -143,39 +146,39 @@ df = df[!(df$workerid %in% low_accuracy$workerid),]
 #### Additional Exclusions
 **Participants who gave more than 5 very slow (logRT>20) responses:**
 ```{r slowworker_exclude, echo=FALSE}
-trials = df %>%
+slow_workers = df %>%
   filter(str_detect(slide_type,"trial")) %>% 
-  filter(str_detect(slide_type,"practice", negate = TRUE))
-
-slow_workers = trials %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE)) %>% 
   mutate(slowResponse = logRT>30) %>%
   group_by(workerid) %>%
   count(slowResponse) %>%
   filter((slowResponse == TRUE)&(n>5))
-
 slow_workers
   
 df = df[!(df$workerid %in% slow_workers$workerid),]
-
 ```
-**Responses that are very slow (logRT>20)**
-```{r slowtrial_exclude, echo=FALSE}
-length(unique(df$workerid))
+**Responses that are faster than the onser of the quantifier (rawRT<600):**
+```{r fast_trial_exclude, echo=FALSE}
+fast = df %>%
+  filter((slide_type=="trial_1"|slide_type=="trial_2") & rawRT<600)
+nrow(fast)
 
-slow_trials = trials[trials$logRT>20,]
-nrow(slow_trials)
+fast = fast %>%
+  select(X)
 
-unique(df$workerid)
+df = df[!(df$X %in% fast$X),]
+```
 
-df = df[!(df$logRT>20),]
+**Responses that are very slow (logRT>20):**
+```{r slow_trial_exclude, echo=FALSE}
+slow = df %>%
+  filter((slide_type=="trial_1"|slide_type=="trial_2") & logRT>20)
+nrow(slow)
 
-length(unique(df$workerid))
+slow = slow %>%
+  select(X)
 
-unique(df$workerid)
-
-trials = df %>%
-  filter(str_detect(slide_type,"trial")) %>% 
-  filter(str_detect(slide_type,"practice", negate = TRUE))
+df = df[!(df$X %in% slow$X),]
 ```
 ## After Exclusions
 **Number of participants:**
@@ -186,9 +189,7 @@ length(unique(df$workerid))
 ```{r after_exclusions_2, echo=FALSE}
 workers = df %>%
   filter(slide_type == "practice_trial")
-
 table(workers$Answer.condition) /4
-
 ```
 
 ## General
@@ -228,6 +229,10 @@ ggplot(acc_prop,aes(x=workerid, y=proportion, color=slide_type_rename))+
 **Distribution of RT and logRT**
 
 ```{r rt_distribution, echo=FALSE, fig.height=3, fig.width=10}
+trials = df %>%
+  filter(str_detect(slide_type,"trial")) %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE))
+
 ggplot(trials, aes(x=rawRT)) +
   geom_histogram(fill= hist_col,binwidth = 50) +
   scale_x_continuous(breaks=seq(0,10000,400),limits=c(0,10000)) +
@@ -254,12 +259,12 @@ tail(sort(trials$rawRT),15)
 ```{r non_critical, echo=FALSE}
 non_critical = trials %>%
   mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
-  filter(str_detect(concat,"some13", negate = TRUE)) %>%
+  filter(str_detect(concat,"summa13", negate = TRUE)) %>%
   group_by(audio,image,key) %>%
-  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  summarize(Median=median(logRT),Mean=mean(logRT),CILow=ci.low(logRT),CIHigh=ci.high(logRT),SD=sd(logRT),Var=var(logRT),count=n()) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
-  mutate(audio = fct_relevel(audio,"none.wav","all.wav","some.wav","one.wav","two.wav","three.wav","four.wav","five.wav","seven.wav","eight.wav","nine.wav","ten.wav","eleven.wav","twelve.wav"))
+  mutate(audio = fct_relevel(audio,"none.wav","all.wav","summa.wav","one.wav","two.wav","three.wav","four.wav","five.wav","seven.wav","eight.wav","nine.wav","ten.wav","eleven.wav","twelve.wav"))
 
 ggplot(non_critical,aes(x=image, y=count ,fill=key))+
   geom_bar(stat = "identity", position=position_dodge(.9)) +
@@ -276,7 +281,7 @@ ggplot(non_critical,aes(x=image, y=Mean ,fill=key))+
   geom_bar(stat = "identity", position=position_dodge(.9)) +
   scale_fill_manual(values=key_col) +
   geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
-  ylab("mean rawRT") +
+  ylab("mean logRT") +
   labs(fill="response") +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
   facet_wrap(~audio, scales="free_x")
@@ -288,7 +293,7 @@ ggplot(non_critical,aes(x=image, y=Mean ,fill=key))+
 critical = df %>% 
   filter(str_detect(slide_type,"trial")) %>% 
   filter(str_detect(slide_type,"practice", negate = TRUE))  %>%
-  filter(str_detect(audio,"some.wav")) %>%
+  filter(str_detect(audio,"summa.wav")) %>%
   filter(str_detect(image,"13")) %>%
   droplevels()
 
@@ -365,7 +370,7 @@ ggplot(demo,aes(x=age))+
 
 **Response type and age**
 
-```{r response_type_age, echo=FALSE, fig.height=3, fig.width=9}
+```{r response_type_age, echo=FALSE}
 rtype = critical %>%
   mutate(semantic = ifelse(key=="Yes",1,0)) %>%
   left_join(demo,by = c("workerid")) %>%
@@ -397,6 +402,7 @@ ggplot(rtype, aes(x = Answer.condition, y=Proportion, fill=Answer.condition)) +
 ```{r response_time, echo=FALSE, fig.height=3, fig.width=9}
 ggplot(critical, aes(x=rawRT)) +
   geom_histogram(fill = hist_col, binwidth = 50) +
+  scale_x_continuous(breaks=seq(0,10000,400),limits=c(0,10000)) +
   xlab("raw RT")
 ```
 
@@ -420,6 +426,7 @@ ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
   #geom_line(data=critical, aes(y = rt, group= as.factor(workerid),color = as.factor(workerid)),alpha=.2)+
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
 ```
+
 **Response time, trial order and QUD**
 
 ```{r response_time_order, echo=FALSE, fig.height=3, fig.width=9}
@@ -492,7 +499,7 @@ ggplot(agr3, aes(fill=key,x=Answer.condition,y=Mean)) +
 
 **Response time, age, responder type and QUD**
 
-```{r response_time_age_responder, echo=FALSE, fig.height=5, fig.width=8}
+```{r response_time_age_responder, echo=FALSE}
 agr2 = critical %>%
   merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
   merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
