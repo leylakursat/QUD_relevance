@@ -1,7 +1,7 @@
 library(tidyverse)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd('../data')
-d = read.csv("subject_info_merged.csv", header = TRUE)
+d = read.csv("merged_subject_information.csv", header = TRUE)
 
 # look at comments
 unique(d$comments,d$workerid)

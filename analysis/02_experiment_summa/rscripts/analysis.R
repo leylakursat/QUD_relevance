@@ -307,9 +307,9 @@ table(responder$n)
 agr2 = critical %>%
   merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
   merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
-  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>25,"25+",NA))) %>%
-  group_by(Answer.condition,key,responder_type) %>%
-  #group_by(Answer.condition,key,age_bucket) %>% 
+  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>44,"45+",NA))) %>%
+  #group_by(Answer.condition,key,responder_type) %>%
+  group_by(Answer.condition,key,age_bucket,responder_type) %>% 
   summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
@@ -318,8 +318,8 @@ mean_responder_rt = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_bar(stat="identity",position=dodge) +
   scale_fill_manual(values = key_col) +
   geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=dodge) +
-  #facet_grid(age_bucket~responder_type)+
-  facet_wrap(~responder_type)+
+  facet_grid(age_bucket~responder_type)+
+  #facet_wrap(~responder_type)+
   #facet_wrap(~age_bucket) +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
 

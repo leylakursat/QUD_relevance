@@ -64,8 +64,8 @@ table(audio_fail$workerid,audio_fail$n)
 df = df[!(df$workerid %in% audio_fail$workerid),]
 
 #comprehension questions -- 0 people excluded
-comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
-comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
+comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$qud=="allQUD" & df$key!="Empty") | (df$qud=="anyQUD" & df$key!="Jam")),]
+comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$qud=="allQUD" & df$key!="Empty") | (df$qud=="anyQUD" & df$key!="Jam")),]
 
 table(comp1_fail$workerid)
 table(comp2_fail$workerid)
@@ -128,10 +128,12 @@ trials = df %>%
   filter(str_detect(slide_type,"trial")) %>% 
   filter(str_detect(slide_type,"practice", negate = TRUE))
 
-rt_dist = ggplot(trials, aes(x=logRT)) +
-            geom_histogram(fill= hist_col) +
-            xlab("log transformed response time") #+
-            facet_wrap(~workerid, scale="free")
+rt_dist = ggplot(trials, aes(x=rt,fill=key)) +
+  geom_histogram(alpha=.3,position="identity") + #fill= hist_col,
+  scale_x_continuous(breaks=seq(0,10000,400),limits=c(0,10000)) +
+  facet_wrap(~qud)
+            # xlab("log transformed response time") #+
+            # facet_wrap(~workerid, scale="free")
             
 rt_dist
 
@@ -207,20 +209,21 @@ ggplot(rtype, aes(x = qud, y=Proportion)) +
   ylab("Proportion of semantic responses") #+
   mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD"))
 
-#trial1 vs trial2 (fix this)
+#trial1 vs trial2
 rtype = critical %>%
   mutate(semantic = ifelse(key=="Yes",1,0)) %>%
   group_by(speaker_cond,slide_type) %>%
   summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic)) %>%
   ungroup() %>%
-  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh)
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) %>%
+  mutate(slide_type_rename = ifelse(slide_type=="trial_1","first_32", ifelse(slide_type=="trial_2", "last_32", slide_type)))
 
 ggplot(rtype, aes(x=speaker_cond, y=Proportion,fill=speaker_cond)) +
   geom_bar(stat="identity") +
   scale_fill_manual(values=cond_col) +
   geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
   ylab("Proportion of semantic responses") +
-  facet_wrap(~slide_type)
+  facet_wrap(~slide_type_rename)
 
 #age buckets
 rtype = critical %>%
@@ -347,9 +350,6 @@ mean_semanticity_rt
 
 #yes/no rt means with age
 agr3 = critical %>%
-  #merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
-  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=45,"31-45",ifelse(age>45,"45+", NA))))) %>%
-  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>25,"25+",NA))) %>%
   group_by(qud,key,age_group) %>%
   summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
   ungroup() %>%
@@ -372,7 +372,6 @@ times = trials %>%
   group_by(workerid) %>%
   mutate(meanRT=mean(rawRT)) %>%
   left_join(demo,by = c("workerid")) %>%
-  #mutate(age_bucket = ifelse(age<=30,"0-30",ifelse(age>30&age<=40,"31-40",ifelse(age>40,"41+", NA)))) %>%
   select(workerid,meanRT,age,age_group) %>%
   unique()
 

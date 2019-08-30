@@ -1,12 +1,13 @@
 library(tidyverse)
 library("wesanderson")
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 source("helpers.R")
-setwd('../data')
-theme_set(theme_bw())
-df = read.csv("results_formatted.csv", header = TRUE)
-demo = read.csv("subject_info_merged.csv", header = TRUE)
 
+df = read.csv("../data/results_formatted.csv", header = TRUE)
+demo = read.csv("../data/subject_info_merged.csv", header = TRUE)
+
+theme_set(theme_bw())
 key_col = wes_palette("Moonrise3") 
 cond_col = wes_palette("Royal2")
 hist_col = wes_palette("Moonrise3")[1]
@@ -15,14 +16,19 @@ age_col = wes_palette("GrandBudapest1")
 #add column for lag response time
 df$logRT = log(df$rawRT)
 
-##########################################################################################
+####################################################################################
 #EXCLUSIONS
 #native language -- all native - TOTAL: 0 exc
-s = read.csv("subject_info_merged.csv", header = TRUE)
-lang = s %>%
+lang_exclude = demo %>%
   select(workerid, language) %>%
-  unique()
-lang
+  unique() %>%
+  filter(str_detect(language,regex("english", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("eng", ignore_case=TRUE),negate=TRUE)) %>%
+  select(workerid)  
+  
+lang_exclude
+
+df = df[!(df$workerid %in% lang_exclude$workerid),]
 
 #practice trials -- 24pt failed two, 2pt failed three, 6pt failed 4 trials - TOTAL: 32 exc
 practice = df %>% 
@@ -31,20 +37,30 @@ practice = df %>%
   group_by(workerid) %>% 
   count(WrongAnswer) %>% 
   merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=45,"31-45",ifelse(age>45,"45+", NA))))) %>%
+  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=45,"31-45",ifelse(age>45,"45+", NA))))) %>%
   filter(WrongAnswer == TRUE & n>1)
 
 table(practice$n)
 
-table(practice$n,practice$age_bucket)
+#table(practice$n,practice$age_bucket)
 
 df = df[!(df$workerid %in% practice$workerid),]
 
 #audio check -- 1pt failed twice(#34), 1pt failed once (#134) - TOTAL: 1 exc
-audio_fail = df[df$slide_type=="audio_check" & df$key !="Four",]
+#audio_fail = df[df$slide_type=="audio_check" & df$key !="Four",]
+#table(audio_fail$workerid)
+#df = df[!(df$workerid %in% audio_fail$workerid ),]
+
+audio_fail = df %>%
+  filter(str_detect(slide_type,"audio_check")) %>%
+  mutate(WrongAnswer = key != "Four") %>%
+  group_by(workerid) %>% 
+  count(WrongAnswer) %>%
+  filter(WrongAnswer == TRUE & n>1)
+
 table(audio_fail$workerid)
 
-df = df[!(df$workerid == "34"),]
+df = df[!(df$workerid %in% audio_fail$workerid ),]
 
 #comprehension questions -- Quiz1: 2pt failed 4 times(#42 and #66), 15pt failed once, Quiz2: 1pt failed once(#40) - TOTAL: 0 exc
 comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
@@ -52,6 +68,13 @@ comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition==
 
 table(comp1_fail$workerid)
 table(comp2_fail$workerid)
+
+comp2_fail =  comp2_fail %>%
+  group_by(workerid) %>%
+  count() %>%
+  filter(n>1)
+
+df = df[!(df$workerid %in% comp2_fail$workerid ),]
 
 #accuracy<85 in non-critical trials - TOTAL: 20 pt exluded
 yes_list = c("some2","some5","some8","some11",
@@ -65,15 +88,28 @@ accuracy = df %>%
   mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
   filter(str_detect(concat,"some13", negate = TRUE)) %>%
   mutate(rightAnswer = ifelse(concat %in% yes_list,"Yes","No")) %>%
-  mutate(gaveRightAnswer = ifelse(key==rightAnswer,"1","0"))%>%
-  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=45,"31-45",ifelse(age>45,"45+", NA)))))
+  mutate(gaveRightAnswer = ifelse(key==rightAnswer,"1","0"))#%>%
+  #merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
+  #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=45,"31-45",ifelse(age>45,"45+", NA)))))
 
+low_accuracy = accuracy %>%
+  group_by(workerid,gaveRightAnswer) %>%
+  count(gaveRightAnswer) %>%
+  mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/64,0)) %>%
+  filter(gaveRightAnswer=="1") %>%
+  filter(accuracy < 85)
+
+low_accuracy
+
+df = df[!(df$workerid %in% low_accuracy$workerid),]
+
+# General
 acc = ggplot(accuracy,aes(x=key, fill=factor(gaveRightAnswer)))+
   geom_bar()+
   labs(title="Correct and Incorrect Answers")#+
   facet_wrap(~workerid)
-
+  
+acc
 #ggsave(acc, file="../graphs/subject_accuracy.pdf",width=25,height=25)
 
 acc_prop = accuracy %>%
@@ -84,23 +120,11 @@ ggplot(acc_prop,aes(x=workerid, y=proportion, color=slide_type))+
   geom_point() +
   geom_hline(yintercept = .85)
 
-#order them
-
-low_accuracy = accuracy %>%
-  group_by(workerid,gaveRightAnswer,age_bucket) %>%
-  count(gaveRightAnswer) %>%
-  mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/64,0)) %>%
-  filter(gaveRightAnswer=="1") %>%
-  filter(accuracy < 85)
-
-low_accuracy
-
-df = df[!(df$workerid %in% low_accuracy$workerid),]
-
 #response times
 #set rt to either raw response times or log response times
 df$rt = df$logRT
 df$rt = df$rawRT
+
 #distribution of rt in experimental trials
 trials = df %>%
   filter(str_detect(slide_type,"trial")) %>% 
@@ -134,6 +158,37 @@ df = df[!(df$logRT>20),]
 trials = df %>%
   filter(str_detect(slide_type,"trial")) %>% 
   filter(str_detect(slide_type,"practice", negate = TRUE))
+
+#Response time distribution -for non-critical trials
+non_critical = trials %>%
+  mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
+  filter(str_detect(concat,"some13", negate = TRUE)) %>%
+  #filter(rawRT > 1000) %>%
+  group_by(audio,image,key) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  mutate(audio = fct_relevel(audio,"none.wav","all.wav","some.wav","one.wav","two.wav","three.wav","four.wav","five.wav","six.wav","seven.wav","eight.wav","nine.wav","ten.wav","eleven.wav","twelve.wav"))
+
+
+#dodge = position_dodge(.9)
+
+ggplot(non_critical,aes(x=image, y=count ,fill=key))+
+  geom_bar(stat = "identity", position=dodge) +
+  scale_fill_manual(values=key_col) +
+  ylab("mean rawRT") +
+  #geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
+  facet_wrap(~audio, scales="free_x")
+
+
+ggplot(non_critical,aes(x=image, y=Mean ,fill=key))+
+  geom_bar(stat = "identity", position=dodge) +
+  scale_fill_manual(values=key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  ylab("mean rawRT") +
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
+  #scale_y_continuous(limits=c(0,10000)) +
+  facet_wrap(~audio, scales="free_x")
 
 ##########################################################################################
 #CRITICAL TRIALS
@@ -182,17 +237,16 @@ ggplot(demo,aes(x=age))+
 
 table(demo$age)
 
-
 rtype = critical %>%
   mutate(semantic = ifelse(key=="Yes",1,0)) %>%
   left_join(demo,by = c("workerid")) %>%
   #mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=35,"31-35",ifelse(age<=40,"36-40",ifelse(age<=45,"41-45",ifelse(age>45,"45+", NA))))))) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>25,"25+",NA)))%>%
+  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age>44,"45+",NA)))%>%
   group_by(Answer.condition,age_bucket) %>%
   summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic),count=n()) %>%
   ungroup() %>%
   mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) %>%
-  mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD"))
+  #mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD"))
 
 age_judgement = ggplot(rtype, aes(x = Answer.condition, y=Proportion, fill=Answer.condition)) +
   geom_bar(stat="identity") +
@@ -216,6 +270,8 @@ d = critical %>%
   merge(critical[ ,c("workerid","Answer.condition")], by="workerid",all.x=TRUE) %>%
   #filter(Answer.condition=="no_QUD") %>%
   unique()
+
+d
   
 table(d$Answer.condition,d$n)
 
@@ -260,6 +316,23 @@ mean_rt = ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
 mean_rt
 
 #ggsave(mean_rt, file="../graphs/mean_rt.pdf")
+
+#response time and trial order
+order = critical %>%
+  group_by(slide_type,key,Answer.condition) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+ggplot(order, aes(fill=key,x=Answer.condition,y=Mean)) +
+  geom_bar(stat="identity",position=position_dodge(.9)) +
+  scale_fill_manual(values = key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  ylab("mean rawRT")+
+  xlab("")+
+  labs(fill="response") +
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
+  facet_grid(~slide_type)
 
 #yes/no rt means with responder type & qud
 responder = critical %>%
