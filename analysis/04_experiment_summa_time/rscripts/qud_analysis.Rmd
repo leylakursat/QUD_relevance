@@ -1,8 +1,8 @@
 ---
 title: "Experiment 4: summa with time pressure"
-output: rmarkdown::github_document
-#output:
-#  html_document: default
+#output: rmarkdown::github_document
+output:
+  html_document: default
 #  pdf_document: default
 ---
 
@@ -79,14 +79,14 @@ lang_exclude = lang_exclude %>%
 
 df = df[!(df$workerid %in% lang_exclude$workerid),]
 ```
-**Participants who got at least two practice trials wrong:**
+**Participants who got at least three practice trials wrong:**
 ```{r practice_exclude, echo=FALSE}
 practice = df %>% 
   filter(str_detect(slide_type,"practice_trial")) %>%
   mutate(WrongAnswer = ((audio=="none.wav" & image=="13" & key=="Yes")|(audio=="all.wav" & image=="13" & key=="No")|(audio=="all.wav" & image=="0" & key=="Yes")| (audio=="none.wav" & image=="0" & key=="No"))) %>% 
   group_by(workerid) %>% 
   count(WrongAnswer) %>% 
-  filter(WrongAnswer == TRUE & n>1)
+  filter(WrongAnswer == TRUE & n>2)
 
 table(practice$n)
 
@@ -304,8 +304,8 @@ critical = df %>%
 
 nrow(critical) #6075
 ```
-  ###Critical Trials
-**Total number of critical trials with late responses removed(8 per participant):**
+
+**Total number of critical trials with late responses removed:**
 ```{r critical2, echo=FALSE}
 critical = df %>% 
   filter(str_detect(slide_type,"trial")) %>% 
