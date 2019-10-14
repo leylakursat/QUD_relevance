@@ -141,7 +141,7 @@ comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition==
 comp2_fail =  comp2_fail %>%
   group_by(workerid) %>%
   count() %>%
-  filter(n>1)
+  filter(n>2)
 
 comp2_fail
 

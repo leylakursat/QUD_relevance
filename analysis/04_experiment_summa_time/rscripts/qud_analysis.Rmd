@@ -1,9 +1,8 @@
 ---
-title: "Experiment 4: summa with time pressure"
-#output: rmarkdown::github_document
+title: 'Experiment 4: summa with time pressure'
 output:
   html_document: default
-#  pdf_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -116,31 +115,42 @@ comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition==
 comp2_fail =  comp2_fail %>%
   group_by(workerid) %>%
   count() %>%
-  filter(n>1)
+  filter(n>2)
 
 comp2_fail
 
 df = df[!(df$workerid %in% comp2_fail$workerid ),]
 ```
-**Participants with accuracy of lower than 85% on non-critical trials:**
+**Participants with accuracy of lower than 85% on non-critical trials with "some","none","all" and numbers below 6:**
 ```{r accuracy_exclude, echo=FALSE}
 yes_list = c("summa2","summa5","summa8","summa11",
              "all13",
              "none0",
              "zero0","two2","five5","eight8","eleven11","thirteen13")
 
+exclude_list = c("seven11","eight8","eight13","nine5","ten5","ten13","eleven0","eleven8","eleven11","twelve2","thirteen8")
+
 accuracy = df %>% 
   filter(str_detect(slide_type,"trial")) %>% 
   filter(str_detect(slide_type,"practice", negate = TRUE)) %>%
   mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
   filter(str_detect(concat,"summa13", negate = TRUE)) %>%
+  filter(!key=="Late") %>%
+  filter(!concat %in% exclude_list) %>%
   mutate(rightAnswer = ifelse(concat %in% yes_list,"Yes","No")) %>%
   mutate(gaveRightAnswer = ifelse(key==rightAnswer,"1","0"))
+
+answerNumber = accuracy %>%
+  group_by(workerid) %>%
+  count(workerid) %>%
+  mutate(answerNm = n)
 
 low_accuracy = accuracy %>%
   group_by(workerid,gaveRightAnswer) %>%
   count(gaveRightAnswer) %>%
-  mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/64,0)) %>%
+  merge(answerNumber[ ,c("workerid","answerNm")], by="workerid",all.x=TRUE) %>%
+  #mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/64,0)) %>%
+  mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/answerNm,0)) %>%
   filter(gaveRightAnswer=="1") %>%
   filter(accuracy < 85)
 
@@ -265,6 +275,7 @@ tail(sort(trials$rawRT),15)
 non_critical = trials %>%
   mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
   filter(str_detect(concat,"summa13", negate = TRUE)) %>%
+  #filter(workerid %in% low_accuracy$workerid) %>%
   group_by(audio,image,key) %>%
   summarize(Median=median(logRT),Mean=mean(logRT),CILow=ci.low(logRT),CIHigh=ci.high(logRT),SD=sd(logRT),Var=var(logRT),count=n()) %>%
   ungroup() %>%
@@ -382,11 +393,20 @@ ggplot(rtype, aes(x = Answer.condition, y=Proportion,fill=Answer.condition)) +
 **Age distribution of participants**
 
 ```{r age_distribution, echo=FALSE, fig.height=3, fig.width=6}
-#age buckets
-demo$age = as.numeric(demo$age)
+#exc = demo[!complete.cases(demo$age),] #remove NA
 
-ggplot(demo,aes(x=age))+
-  geom_histogram(fill= hist_col, bins=35)
+#demo2 = demo[!(demo$workerid %in% exc$workerid),]
+
+demo2 = demo %>%
+  group_by(age) %>%
+  count() %>%
+  filter(age != "") %>%
+  filter(age != "male") %>%
+  filter(age != "30-something")
+
+ggplot(demo2,aes(x=age, y=n))+
+  geom_bar(stat="identity", fill = hist_col)
+
 ```
 
 **Response type and age**
@@ -513,9 +533,8 @@ ggplot(agr3, aes(fill=key,x=Answer.condition,y=Mean)) +
   theme(plot.title = element_text(hjust =0.5),axis.text.x=element_text(angle=45,hjust=1,vjust=1))+
   xlab("") +
   labs(fill="response") +
-  facet_wrap(~age_bucket) +
+  facet_wrap(~age_bucket, scales="free_y") +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
-
 ```
 
 **Response time, age, responder type and QUD**
