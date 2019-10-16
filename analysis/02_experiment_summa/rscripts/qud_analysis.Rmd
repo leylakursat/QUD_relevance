@@ -315,6 +315,23 @@ ggplot(rtype, aes(x = Answer.condition, y=Proportion)) +
   geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
   ylab("Proportion of semantic responses") +
   xlab("")
+
+rtype2 = critical %>%
+  mutate(semantic = ifelse(key=="No",1,0)) %>%
+  group_by(Answer.condition) %>%
+  summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic)) %>%
+  ungroup() %>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh)
+
+pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
+  geom_bar(stat="identity", fill = cond_col[4]) +
+  geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
+  ylab("Proportion of pragmatic responses") +
+  xlab("")
+
+#pragmatic
+
+#ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=4,height=5)
 ```
 
 **Distribution of participants over number of semantic responses**
@@ -324,19 +341,22 @@ d = critical %>%
   #modify_if(is.integer, as.factor) %>%
   group_by(workerid,key,.drop=FALSE) %>%
   count() %>% 
-  filter(key=="Yes") %>%
+  filter(key=="No") %>%
   merge(critical[ ,c("workerid","Answer.condition")], by="workerid",all.x=TRUE) %>%
   unique()
 
 table(d$Answer.condition,d$n)
 
-ggplot(d, aes(x=n,fill=Answer.condition)) +
+count = ggplot(d, aes(x=n,fill=Answer.condition)) +
   scale_fill_manual(values = cond_col) +
   geom_histogram(position=position_dodge(.5), bins=10, binwidth = 0.3) +
-  xlab("Number of semantic responses") +
+  xlab("Number of pragmatic responses") +
   labs(fill="QUD") +
   scale_x_continuous(breaks=c(0:8)) #+
   #facet_wrap(~key)
+
+#ggsave(count, file="../graphs/count_pragmatic.pdf",width=6,height=3)
+
 ```
 
 **Response type and trial order**
@@ -372,27 +392,33 @@ ggplot(demo,aes(x=age))+
 
 ```{r response_type_age, echo=FALSE}
 rtype = critical %>%
-  mutate(semantic = ifelse(key=="Yes",1,0)) %>%
+  mutate(semantic = ifelse(key=="No",1,0)) %>%
   left_join(demo,by = c("workerid")) %>%
   #mutate(age_bucket=ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=35,"31-35",ifelse(age<=40,"36-40",ifelse(age<=44,"41-44",ifelse(age>44,"45+", NA))))))) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA))))%>%
+  mutate(age_bucket = ifelse(age<=25,"18-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA))))%>%
   group_by(Answer.condition,age_bucket) %>%
   summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic),count=n()) %>%
   ungroup() %>%
-  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) #%>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) %>%
   #mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD"))
+  filter(!age_bucket == "NA") %>%
+  filter(!age_bucket == "26-44")
 
-ggplot(rtype, aes(x = Answer.condition, y=Proportion, fill=Answer.condition)) +
+age_pragmatic = ggplot(rtype, aes(x = Answer.condition, y=Proportion, fill=Answer.condition)) +
   geom_bar(stat="identity") +
   scale_fill_manual(values = cond_col) +
   geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
-  ylab("Proportion of semantic responses") +
+  ylab("Proportion of pragmatic responses") +
   xlab("") +
   labs(fill="QUD") +
   theme(legend.position = "none") +
   facet_wrap(~age_bucket) +
   #geom_text(aes(label=count),nudge_x=0.2)
   geom_text(aes(label=count, y = 0),position=position_dodge(width=1),vjust=0,size=3)
+
+age_pragmatic
+
+#ggsave(age_pragmatic, file="../graphs/age_pragmatic.pdf",width=6,height=3)
 ```
 
 ####Response Time
@@ -415,7 +441,7 @@ agr = critical %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
 
-ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
+response_time = ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_bar(stat="identity",position=position_dodge(.9)) +
   scale_fill_manual(values = key_col) +
   geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
@@ -425,6 +451,11 @@ ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
   #geom_point(data=agr2, aes(color = as.factor(workerid)),alpha=.2) +
   #geom_line(data=critical, aes(y = rt, group= as.factor(workerid),color = as.factor(workerid)),alpha=.2)+
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+
+response_time 
+
+ggsave(response_time, file="../graphs/response_time.pdf",width=6,height=3.5)
+
 ```
 
 **Response time, trial order and QUD**
@@ -462,9 +493,10 @@ agr2 = critical %>%
   group_by(Answer.condition,key,responder_type) %>% 
   summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
   ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  filter(responder_type != "inconsistent")
 
-ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
+responder = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_bar(stat="identity",position=position_dodge(.9)) +
   scale_fill_manual(values = key_col) +
   geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
@@ -472,6 +504,10 @@ ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   labs(fill="response") +
   facet_grid(~responder_type)+
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+
+responder
+
+#ggsave(responder, file="../graphs/responder.pdf",width=8,height=4)
 ```
 
 **Response time, age and QUD**
@@ -479,13 +515,15 @@ ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
 ```{r response_time_age, echo=FALSE, fig.height=4, fig.width=8}
 agr3 = critical %>%
   merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
-  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA)))) %>%
+  mutate(age_bucket = ifelse(age<=25,"18-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA)))) %>%
   group_by(Answer.condition,key,age_bucket) %>%
   summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
   ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  filter(!age_bucket == "NA") %>%
+  filter(!age_bucket == "26-44")
 
-ggplot(agr3, aes(fill=key,x=Answer.condition,y=Mean)) +
+age_time = ggplot(agr3, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_bar(stat="identity",position=position_dodge(.9)) +
   scale_fill_manual(values = key_col) +
   geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
@@ -494,6 +532,10 @@ ggplot(agr3, aes(fill=key,x=Answer.condition,y=Mean)) +
   labs(fill="response") +
   facet_wrap(~age_bucket) +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+
+age_time
+
+#ggsave(age_time, file="../graphs/age_time.pdf",width=8,height=4)
 
 ```
 
