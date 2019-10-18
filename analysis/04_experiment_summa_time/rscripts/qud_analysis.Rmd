@@ -1,8 +1,8 @@
 ---
 title: 'Experiment 4: summa with time pressure'
-output: rmarkdown::github_document
-#output:
-  #html_document: default
+#output: rmarkdown::github_document
+output:
+  html_document: default
   #pdf_document: default
 ---
 
@@ -302,6 +302,7 @@ ggplot(non_critical,aes(x=image, y=Mean ,fill=key))+
   labs(fill="response") +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
   facet_wrap(~audio, scales="free_x")
+
 ```
 
 ###Critical Trials
@@ -378,6 +379,7 @@ d = critical %>%
   merge(critical[ ,c("workerid","Answer.condition")], by="workerid",all.x=TRUE) %>%
   unique() %>%
   mutate()
+
 
 table(d$Answer.condition,d$n)
 
@@ -605,6 +607,26 @@ ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
 ```
 
+**EXTRA: Semanticity and response time**
+```{r semanticity_rtime, echo=FALSE, fig.height=3, fig.width=6}
+sem = critical %>%
+  group_by(workerid) %>%
+  summarize(Mean=mean(rt)) %>%
+  merge(d[ ,c("workerid","n")], by="workerid",all.x=TRUE) %>%
+  group_by(n) %>%
+  summarize(Mean=mean(Mean))
+
+ggplot(sem, aes(x=n, y=Mean)) +
+  geom_bar(stat = "identity") +
+  scale_color_manual(key_col) +
+  xlab("Number of semantic responses") +
+  scale_x_continuous(breaks=c(0:8))
+
+```
+
+
+
+
 **Models**
 ```{r models1, eval=FALSE, include=FALSE}
 library(lme4)
@@ -633,13 +655,34 @@ summary(m2)
 # same models with responder type (and maybe age?)
 critical_new = critical %>%
   merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
-  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE)
+  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
+  filter(responder_type != "inconsistent") %>%
+  mutate(responder_type = as.factor(responder_type)) %>%
+  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)))
 View(critical_new)
 
-m3 = glmer(key ~ Answer.condition*responder_type + (1|workerid), data=critical_new, family="binomial")
-summary(m3)
+contrasts(critical_new$key)
+contrasts(critical_new$Answer.condition)
+contrasts(critical_new$responder_type)
 
-m4 = lmer(logRT ~ Answer.condition*responder_type*key + (1|workerid), data=critical_new)
+table(critical_new$responder_type)
+table(critical_new$key)
+
+library(lmerTest)
+m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1|workerid), data=critical_new)
 summary(m4)
+
+allany = critical_new %>%
+  filter(Answer.condition != "no_QUD") %>%
+  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)), cAnswer.condition = as.numeric(Answer.condition) - mean(as.numeric(Answer.condition))) %>%
+  droplevels()
+
+m5 = lmer(logRT ~ ckey*cresponder_type*cAnswer.condition + (1|workerid), data=allany)
+summary(m5)
+
+m5.simple = lmer(logRT ~ key*responder_type*Answer.condition - Answer.condition + (1|workerid), data=allany)
+summary(m5.simple)
+
+
 ```
 

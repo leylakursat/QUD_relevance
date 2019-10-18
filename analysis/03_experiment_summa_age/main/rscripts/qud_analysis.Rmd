@@ -1,9 +1,9 @@
 ---
 title: "Experiment 3: summa + age groups"
-output: rmarkdown::github_document
-#output:
+#output: rmarkdown::github_document
+output:
+  html_document: default
 #  pdf_document: default
-#  html_document: default
 ---
 
 ```{r setup, include=FALSE}
