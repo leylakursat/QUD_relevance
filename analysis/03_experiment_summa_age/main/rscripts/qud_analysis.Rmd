@@ -357,11 +357,12 @@ pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
   geom_bar(stat="identity", fill = cond_col[4]) +
   geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
   ylab("Proportion of pragmatic responses") +
-  xlab("")
+  xlab("") +
+  theme(axis.text.y=element_text(size=9), axis.title=element_text(size=8), axis.text.x=element_text(size=7))
 
 #pragmatic
 
-#ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=4,height=5)
+#ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=2.3,height=3)
 
 ```
 
@@ -374,9 +375,14 @@ d = critical %>%
   count() %>% 
   filter(key=="No") %>%
   merge(critical[ ,c("workerid","Answer.condition")], by="workerid",all.x=TRUE) %>%
-  unique()
+  unique() %>%
+  group_by(Answer.condition,n) %>%
+  count() %>%
+  mutate(Proportion = nn/471)
 
-table(d$Answer.condition,d$n)
+#View(d)
+
+#table(d$Answer.condition,d$n) #comment out after unique
 
 count = ggplot(d, aes(x=n,fill=Answer.condition)) +
   scale_fill_manual(values = cond_col) +
@@ -386,7 +392,22 @@ count = ggplot(d, aes(x=n,fill=Answer.condition)) +
   scale_x_continuous(breaks=c(0:8)) #+
   #facet_wrap(~key)
 
-#ggsave(count, file="../graphs/count_pragmatic.pdf",width=6,height=3)
+count
+
+proportion = ggplot(d, aes(x=n, y=Proportion, fill=Answer.condition)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = cond_col) +
+  xlab("Number of pragmatic responses") +
+  ylab("Proportion of participants") +
+  labs(fill="QUD") +
+  scale_x_continuous(breaks=c(0:8)) +
+  ylim(0,0.6) +
+  #scale_y_continuous(limits=c(0:1)) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=10))
+
+#proportion
+
+#ggsave(proportion, file="../graphs/count_pragmatic.pdf",width=4,height=2)
 
 ```
 
@@ -485,11 +506,14 @@ response_time = ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
   labs(fill="response") +
   #geom_point(data=agr2, aes(color = as.factor(workerid)),alpha=.2) +
   #geom_line(data=critical, aes(y = rt, group= as.factor(workerid),color = as.factor(workerid)),alpha=.2)+
-  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  ylim(0,3500) +
+  #scale_y_continuous(limits=c(0:1)) +
+  theme(axis.text.y=element_text(size=8), axis.title=element_text(size=8), axis.text.x=element_text(size=8))
 
 response_time
 
-#ggsave(response_time, file="../graphs/response_time.pdf",width=6,height=3.5)
+ggsave(response_time, file="../graphs/response_time.pdf",width=4,height=3)
 ```
 
 **Response time, trial order and QUD**
