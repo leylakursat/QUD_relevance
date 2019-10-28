@@ -561,11 +561,12 @@ responder2 = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   xlab("") +
   labs(fill="response") +
   facet_grid(~responder_type)+
-  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=6))
 
 responder2
 
-#ggsave(responder2, file="../graphs/responder.pdf",width=8,height=4)
+#ggsave(responder2, file="../graphs/responder.pdf",width=4,height=2)
 ```
 
 **Response time, age and QUD**
@@ -625,17 +626,59 @@ library(lme4)
 library(languageR)
 library(brms)
 
+# 1.JUDGEMENTS - Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
 critical = critical %>%
-  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE)
-
-View(critical) # has age and age_group
-
-#1) Mixed effects logistic regression predicting response from fixed effects of QUD, age and their interaction
-m = glmer(key ~ Answer.condition*age + (1|workerid), data=critical, family="binomial")
+  mutate(numericKey = ifelse(key == "Yes",1,0)) #%>%
+  mutate(numericKey = as.factor(numericKey))
+  
+m = glmer(numericKey ~ Answer.condition + (1|workerid), data=critical, family="binomial")
 summary(m)
 
-#2) Linear mixed effects regression predicting log response time from fixed effects of QUD, response type, age and their interaction
-m.all=lmer(logRT ~ Answer.condition*key*age + (1|workerid), data=critical)
-summary(m.all)
+View(critical)
 
+#BRMS 
+#key should be 0 and 1, than center???
+m_brms = brm(numericKey ~ Answer.condition + (1|workerid), save_all_pars=TRUE, data=critical, iter=1000, family="binomial") #or gaussian
+summary(m_brms)
+
+# 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
+critical_ckey = critical %>%
+  merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
+
+library(lmerTest)
+m2=lmer(logRT ~ Answer.condition*ckey + (1|workerid), data=critical_ckey)
+summary(m2)
+
+# 3.RESPONDER TYPE - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type, responder type and their interaction
+critical_cresponder = critical %>%
+  merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
+  #merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
+  filter(responder_type != "inconsistent") %>%
+  mutate(responder_type = as.factor(responder_type)) %>%
+  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)))
+
+contrasts(critical_new$key)
+contrasts(critical_new$Answer.condition)
+contrasts(critical_new$responder_type)
+
+table(critical_new$responder_type)
+table(critical_new$key)
+
+library(lmerTest)
+m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1|workerid), data=critical_new)
+summary(m4)
+
+#only for all and any
+allany = critical_cresponder %>%
+  filter(Answer.condition != "no_QUD") %>%
+  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)), cAnswer.condition = as.numeric(Answer.condition) - mean(as.numeric(Answer.condition))) %>%
+  droplevels()
+
+m5 = lmer(logRT ~ ckey*cresponder_type*cAnswer.condition + (1|workerid), data=allany)
+summary(m5)
+
+#without centering?
+m5.simple = lmer(logRT ~ key*responder_type*Answer.condition - Answer.condition + (1|workerid), data=allany)
+summary(m5.simple)
 ```

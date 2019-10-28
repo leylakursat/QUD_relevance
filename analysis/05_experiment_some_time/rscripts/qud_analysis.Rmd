@@ -1,0 +1,766 @@
+---
+title: 'Experiment 5: some with time pressure'
+#output: rmarkdown::github_document
+output:
+  html_document: default
+  #pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r data import, include=FALSE}
+library(tidyverse)
+library(lme4)
+library(languageR)
+library(brms)
+
+library("wesanderson")
+source("helpers.R")
+options(scipen=999)
+
+theme_set(theme_bw())
+key_col = wes_palette("Moonrise3")
+cond_col = wes_palette("Royal2")
+hist_col = wes_palette("Moonrise3")[1]
+age_col = wes_palette("GrandBudapest1")
+
+df = read.csv("../data/results_formatted.csv", header = TRUE)
+demo = read.csv("../data/subject_info_merged.csv", header = TRUE)
+
+#add column for lag response time
+df$logRT = log(df$rawRT)
+
+df$rt = df$rawRT
+#df$rt = df$logRT
+```
+### Before Exclusions
+**Number of participants tested:**
+```{r before_exclusion, echo=FALSE}
+length(demo$workerid)
+```
+**Participants in each condition:**
+```{r before_exclusion_2, echo=FALSE}
+workers = df %>%
+  filter(slide_type == "practice_trial")
+table(workers$Answer.condition) /4
+```
+
+### Exclusions
+
+**Non-unique participants (remove all attempts):**
+```{r not_unique_exclude, echo=FALSE}
+not_unique = demo$workerid[duplicated(demo$workerid)]
+not_unique
+
+#remove non-unique
+df = df[!(df$workerid %in% not_unique),]
+demo = demo[!(demo$workerid %in% not_unique),]
+```
+
+**Participants whose native language is not english:**
+```{r lang_exclude, echo=FALSE}
+lang_exclude = demo %>%
+  select(workerid, language) %>%
+  unique() %>%
+  filter(str_detect(language,regex("english", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("eng", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("egnlish", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("United States", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("en", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("ernglish", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("rnglish", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("USA", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("American", ignore_case=TRUE),negate=TRUE)) %>%
+  filter(str_detect(language,regex("United Kingdom", ignore_case=TRUE),negate=TRUE))
+
+lang_exclude
+
+lang_exclude = lang_exclude %>%
+  select(workerid)
+
+df = df[!(df$workerid %in% lang_exclude$workerid),]
+```
+**Participants who got at least three practice trials wrong:**
+```{r practice_exclude, echo=FALSE}
+practice = df %>% 
+  filter(str_detect(slide_type,"practice_trial")) %>%
+  mutate(WrongAnswer = ((audio=="none.wav" & image=="13" & key=="Yes")|(audio=="all.wav" & image=="13" & key=="No")|(audio=="all.wav" & image=="0" & key=="Yes")| (audio=="none.wav" & image=="0" & key=="No"))) %>% 
+  group_by(workerid) %>% 
+  count(WrongAnswer) %>% 
+  filter(WrongAnswer == TRUE & n>2)
+
+#table(practice$n)
+
+#df = df[!(df$workerid %in% practice$workerid),]
+```
+**Participants who got the audio check wrong more than one once:**
+```{r audio_exclude, echo=FALSE}
+audio_fail = df %>%
+  filter(str_detect(slide_type,"audio_check")) %>%
+  mutate(WrongAnswer = key != "Four") %>%
+  group_by(workerid) %>% 
+  count(WrongAnswer) %>%
+  filter(WrongAnswer == TRUE & n>1)
+
+#table(audio_fail$workerid)
+
+#df = df[!(df$workerid %in% audio_fail$workerid ),]
+```
+**Participants who got the second comprehension question wrong more than twice:**
+```{r comp_exclude, echo=FALSE}
+comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
+comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
+
+#table(comp1_fail$workerid)
+#table(comp2_fail$workerid)
+
+comp2_fail =  comp2_fail %>%
+  group_by(workerid) %>%
+  count() %>%
+  filter(n>2)
+
+comp2_fail
+
+df = df[!(df$workerid %in% comp2_fail$workerid ),]
+```
+**Participants with accuracy of lower than 85% on non-critical trials with "some","none","all" and numbers below 6:**
+```{r accuracy_exclude, echo=FALSE}
+yes_list = c("some2","some5","some8","some11",
+             "all13",
+             "none0",
+             "zero0","two2","five5","eight8","eleven11","thirteen13")
+
+exclude_list = c("seven11","eight8","eight13","nine5","ten5","ten13","eleven0","eleven8","eleven11","twelve2","thirteen8")
+
+accuracy = df %>% 
+  filter(str_detect(slide_type,"trial")) %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE)) %>%
+  mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
+  filter(str_detect(concat,"some13", negate = TRUE)) %>%
+  filter(!key=="Late") %>%
+  filter(!concat %in% exclude_list) %>%
+  mutate(rightAnswer = ifelse(concat %in% yes_list,"Yes","No")) %>%
+  mutate(gaveRightAnswer = ifelse(key==rightAnswer,"1","0"))
+
+answerNumber = accuracy %>%
+  group_by(workerid) %>%
+  count(workerid) %>%
+  mutate(answerNm = n)
+
+low_accuracy = accuracy %>%
+  group_by(workerid,gaveRightAnswer) %>%
+  count(gaveRightAnswer) %>%
+  merge(answerNumber[ ,c("workerid","answerNm")], by="workerid",all.x=TRUE) %>%
+  #mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/64,0)) %>%
+  mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/answerNm,0)) %>%
+  filter(gaveRightAnswer=="1") %>%
+  filter(accuracy < 85)
+
+low_accuracy
+
+df = df[!(df$workerid %in% low_accuracy$workerid),]
+```
+#### Additional Exclusions
+**Participants who gave more than 5 very slow (logRT>20) responses:**
+```{r slowworker_exclude, echo=FALSE}
+slow_workers = df %>%
+  filter(str_detect(slide_type,"trial")) %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE)) %>% 
+  mutate(slowResponse = logRT>30) %>%
+  group_by(workerid) %>%
+  count(slowResponse) %>%
+  filter((slowResponse == TRUE)&(n>5))
+slow_workers
+  
+df = df[!(df$workerid %in% slow_workers$workerid),]
+```
+**Responses that are faster than the onset of the quantifier (rawRT<600):**
+```{r fast_trial_exclude, echo=FALSE}
+fast = df %>%
+  filter((slide_type=="trial_1"|slide_type=="trial_2") & rawRT<600)
+nrow(fast)
+
+fast = fast %>%
+  select(X)
+
+df = df[!(df$X %in% fast$X),]
+```
+
+**Responses that are very slow (logRT>20):**
+```{r slow_trial_exclude, echo=FALSE}
+slow = df %>%
+  filter((slide_type=="trial_1"|slide_type=="trial_2") & logRT>20)
+nrow(slow)
+
+slow = slow %>%
+  select(X)
+
+df = df[!(df$X %in% slow$X),]
+```
+## After Exclusions
+**Number of participants:**
+```{r after_exclusions, echo=FALSE}
+length(unique(df$workerid))
+```
+**Participants left in each condition:**
+```{r after_exclusions_2, echo=FALSE}
+workers = df %>%
+  filter(slide_type == "practice_trial")
+table(workers$Answer.condition) /4
+```
+
+## General
+**Expected number of yes and no answers:**
+```{r accuracy, echo=FALSE}
+table(accuracy$rightAnswer)
+```
+
+**Accuracy**
+
+```{r accuracy_2, echo=FALSE, fig.height=3, fig.width=4}
+ggplot(accuracy,aes(x=key, fill=factor(gaveRightAnswer)))+
+  geom_bar() +
+  scale_fill_manual(values=c(hist_col,cond_col[4])) +
+  xlab("response") +
+  labs(fill="correct answer") 
+  
+```
+
+**Accuracy and trial order**
+
+```{r trial_order, echo=FALSE, fig.height=3, fig.width=5}
+acc_prop = accuracy %>%
+  group_by(workerid,slide_type) %>%
+  summarise(proportion=mean(as.numeric(gaveRightAnswer))) %>%
+  mutate(slide_type_rename = ifelse(slide_type=="trial_1","first_half", ifelse(slide_type=="trial_2", "second_half", slide_type)))
+
+ggplot(acc_prop,aes(x=workerid, y=proportion, color=slide_type_rename))+
+  geom_point() +
+  geom_hline(yintercept = .85) +
+  labs(color='trial order') +
+  scale_color_manual(values=c(cond_col[3],hist_col))
+
+```
+
+
+**Distribution of RT and logRT**
+
+```{r rt_distribution, echo=FALSE, fig.height=3, fig.width=10}
+trials = df %>%
+  filter(str_detect(slide_type,"trial")) %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE))
+
+ggplot(trials, aes(x=rawRT)) +
+  geom_histogram(fill= hist_col,binwidth = 50) +
+  scale_x_continuous(breaks=seq(0,10000,400),limits=c(0,10000)) +
+  xlab("raw RT")
+
+ggplot(trials, aes(x=logRT)) +
+  geom_histogram(fill= hist_col,breaks=seq(0, 20, by=0.2)) +
+  xlab("log transformed rt")
+```
+15 fastest responses (raw RT)
+```{r fastest_resp, echo=FALSE}
+head(sort(trials$rawRT),15)
+```
+
+15 slowest responses (raw RT)
+```{r slowest_resp, echo=FALSE}
+tail(sort(trials$rawRT),15)
+```
+
+###Non-critical Trials
+
+**Response type:**
+
+```{r non_critical, echo=FALSE}
+non_critical = trials %>%
+  mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
+  filter(str_detect(concat,"some13", negate = TRUE)) %>%
+  #filter(workerid %in% low_accuracy$workerid) %>%
+  group_by(audio,image,key) %>%
+  summarize(Median=median(logRT),Mean=mean(logRT),CILow=ci.low(logRT),CIHigh=ci.high(logRT),SD=sd(logRT),Var=var(logRT),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  mutate(audio = fct_relevel(audio,"none.wav","all.wav","some.wav","one.wav","two.wav","three.wav","four.wav","five.wav","seven.wav","eight.wav","nine.wav","ten.wav","eleven.wav","twelve.wav"))
+
+ggplot(non_critical,aes(x=image, y=count ,fill=key))+
+  geom_bar(stat = "identity", position=position_dodge(.9)) +
+  scale_fill_manual(values=key_col) +
+  ylab("count") +
+  labs(fill="response") +
+  facet_wrap(~audio, scales="free_x")
+```
+
+**Response time:**
+
+```{r non_critical_2, echo=FALSE, fig.height=10, fig.width=13}
+ggplot(non_critical,aes(x=image, y=Mean ,fill=key))+
+  geom_bar(stat = "identity", position=position_dodge(.9)) +
+  scale_fill_manual(values=key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  ylab("mean logRT") +
+  labs(fill="response") +
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
+  facet_wrap(~audio, scales="free_x")
+
+```
+
+###Critical Trials
+**Total number of critical trials (8 per participant):**
+```{r critical, echo=FALSE}
+critical = df %>% 
+  filter(str_detect(slide_type,"trial")) %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE))  %>%
+  filter(str_detect(audio,"some.wav")) %>%
+  filter(str_detect(image,"13")) %>%
+  droplevels()
+
+nrow(critical) #6940
+
+```
+
+**Total number of critical trials with late responses removed:**
+```{r critical2, echo=FALSE}
+critical = df %>% 
+  filter(str_detect(slide_type,"trial")) %>% 
+  filter(str_detect(slide_type,"practice", negate = TRUE))  %>%
+  filter(str_detect(audio,"some.wav")) %>%
+  filter(str_detect(image,"13")) %>%
+  filter(str_detect(key,"Late", negate = TRUE)) %>%
+  droplevels()
+
+nrow(critical) #6869
+
+```
+  
+
+####Response Type
+
+```{r response_type, echo=FALSE, fig.height=3, fig.width=3}
+rtype = critical %>%
+  mutate(semantic = ifelse(key=="Yes",1,0)) %>%
+  group_by(Answer.condition) %>%
+  summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic)) %>%
+  ungroup() %>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh)
+
+ggplot(rtype, aes(x = Answer.condition, y=Proportion)) +
+  geom_bar(stat="identity", fill = cond_col[4]) +
+  geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
+  ylab("Proportion of semantic responses") +
+  xlab("")
+
+rtype2 = critical %>%
+  mutate(semantic = ifelse(key=="No",1,0)) %>%
+  group_by(Answer.condition) %>%
+  summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic)) %>%
+  ungroup() %>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh)
+
+pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
+  geom_bar(stat="identity", fill = cond_col[4]) +
+  geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
+  ylab("Proportion of pragmatic responses") +
+  xlab("") +
+  theme(axis.text.y=element_text(size=9), axis.title=element_text(size=8), axis.text.x=element_text(size=7)) +
+  ylim(0,0.8)
+
+pragmatic
+
+#ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=2.3,height=3)
+
+```
+
+**Distribution of participants over number of semantic responses**
+
+```{r response_type_semantic, echo=FALSE, fig.height=3, fig.width=6}
+d = critical %>%
+  #modify_if(is.integer, as.factor) %>%
+  group_by(workerid,key,.drop=FALSE) %>%
+  summarise(numPragmatic = n()) %>%
+  filter(key=="No") %>%
+  merge(critical[ ,c("workerid","Answer.condition")], by="workerid",all.x=TRUE) %>%
+  unique() %>%
+  group_by(Answer.condition,numPragmatic) %>%
+  count() %>%
+  group_by(Answer.condition) %>%
+  mutate(total_condition = sum(n)) %>%
+  mutate(prop_condition = n/total_condition) %>%
+  group_by(numPragmatic) %>%
+  mutate(total_numPragmatic = sum(n)) %>%
+  mutate(prop_numPragmatic = n/total_numPragmatic)
+
+proportion = ggplot(d, aes(x=numPragmatic, y=prop_numPragmatic, fill=Answer.condition)) +
+  #geom_bar(stat="identity", position = position_dodge(.6), width = 0.6) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = cond_col) +
+  xlab("Number of pragmatic responses") +
+  ylab("Proportion of participants") +
+  labs(fill="QUD") +
+  scale_x_continuous(breaks=c(0:8)) +
+  #scale_y_continuous(limits=c(0:1)) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=7), axis.text.x=element_text(size=10))
+
+proportion
+
+#ggsave(proportion, file="../graphs/pragmatic_proportion_qud.pdf",width=4,height=2)
+
+proportion2 = ggplot(d, aes(x=numPragmatic, y=prop_condition, fill=Answer.condition)) +
+  geom_bar(stat="identity", position = position_dodge(.6), width = 0.6) +
+  scale_fill_manual(values = cond_col) +
+  xlab("Number of pragmatic responses") +
+  ylab("Proportion of participants in QUD") +
+  labs(fill="QUD") +
+  scale_x_continuous(breaks=c(0:8)) +
+  #scale_y_continuous(limits=c(0:1)) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=7), axis.text.x=element_text(size=10))
+
+proportion2
+
+#ggsave(proportion2, file="../graphs/pragmatic_proportion_answer.pdf",width=4,height=2)
+
+```
+
+**Response type and trial order**
+
+```{r response_type_time, echo=FALSE, fig.height=3, fig.width=6}
+rtype = critical %>%
+  mutate(semantic = ifelse(key=="Yes",1,0)) %>%
+  group_by(Answer.condition,slide_type) %>%
+  summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic)) %>%
+  ungroup() %>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) %>%
+  mutate(slide_type_rename = ifelse(slide_type=="trial_1","first_half", ifelse(slide_type=="trial_2", "second_half", slide_type)))
+
+ggplot(rtype, aes(x = Answer.condition, y=Proportion,fill=Answer.condition)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = cond_col) +
+  geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
+  ylab("Proportion of semantic responses") +
+  xlab("") +
+  facet_wrap(~slide_type_rename) +
+  labs(fill="QUD")
+```
+
+**Age distribution of participants**
+
+```{r age_distribution, echo=FALSE, fig.height=3, fig.width=6}
+demo2 = demo %>%
+  group_by(age) %>%
+  count() %>%
+  filter(age != "") %>%
+  filter(age != "male") %>%
+  filter(age != "30-something")
+
+ggplot(demo2,aes(x=age, y=n))+
+  geom_bar(stat="identity", fill = hist_col)
+
+```
+
+**Response type and age**
+
+```{r response_type_age, echo=FALSE}
+demo$age = as.numeric(as.character(demo$age))
+
+rtype = critical %>%
+  mutate(semantic = ifelse(key=="No",1,0)) %>%
+  left_join(demo,by = c("workerid")) %>%
+  #mutate(age_bucket=ifelse(age<=25,"0-25",ifelse(age<=30,"26-30",ifelse(age<=35,"31-35",ifelse(age<=40,"36-40",ifelse(age<=44,"41-44",ifelse(age>44,"45+", NA))))))) %>%
+  mutate(age_bucket = ifelse(age<=25,"18-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA))))%>%
+  group_by(Answer.condition,age_bucket) %>%
+  summarise(Proportion=mean(semantic),CILow=ci.low(semantic),CIHigh=ci.high(semantic),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Proportion-CILow,YMax=Proportion+CIHigh) %>%
+  #mutate(Answer.condition = fct_relevel(Answer.condition,"no_QUD","any_QUD")) %>%
+  filter(!age_bucket == "NA") %>%
+  filter(!age_bucket == "26-44")
+
+age_pragmatic  = ggplot(rtype, aes(x = Answer.condition, y=Proportion, fill=Answer.condition)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = cond_col) +
+  geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
+  ylab("Proportion of pragmatic responses") +
+  xlab("") +
+  labs(fill="QUD") +
+  theme(legend.position = "none") +
+  facet_wrap(~age_bucket) +
+  #geom_text(aes(label=count),nudge_x=0.2)
+  geom_text(aes(label=count, y = 0),position=position_dodge(width=1),vjust=0,size=3)
+
+age_pragmatic
+
+#ggsave(age_pragmatic, file="../graphs/age_pragmatic.pdf",width=6,height=3)
+
+```
+
+####Response Time
+
+**Distribution of response times in critical trials**
+
+```{r response_time, echo=FALSE, fig.height=3, fig.width=9}
+ggplot(critical, aes(x=rawRT)) +
+  geom_histogram(fill = hist_col, binwidth = 50) +
+  scale_x_continuous(breaks=seq(0,10000,400),limits=c(0,10000)) +
+  xlab("raw RT")
+```
+
+**Response time and QUD**
+
+```{r response_time_qud, echo=FALSE, fig.height=3, fig.width=5}
+agr = critical %>%
+  group_by(Answer.condition,key) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+response_time = ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
+  geom_bar(stat="identity",position=position_dodge(.9)) +
+  scale_fill_manual(values = key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  ylab("mean rawRT")+
+  xlab("")+
+  labs(fill="response") +
+  #geom_point(data=agr2, aes(color = as.factor(workerid)),alpha=.2) +
+  #geom_line(data=critical, aes(y = rt, group= as.factor(workerid),color = as.factor(workerid)),alpha=.2)+
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  ylim(0,2000) +
+  #scale_y_continuous(limits=c(0:1)) +
+  theme(axis.text.y=element_text(size=8), axis.title=element_text(size=8), axis.text.x=element_text(size=8))
+
+response_time
+
+ggsave(response_time, file="../graphs/response_time.pdf",width=4,height=2)
+
+#diffs = critical %>%
+#  group_by(key,workerid) %>%
+#  summarize(Mean=mean(rt)) %>%
+#  ungroup() %>%
+#  spread(key,Mean)  %>%
+#  mutate(Diff  = No -  Yes)
+
+#ggplot(diffs, aes(x=Diff))  +
+#  geom_histogram()  +
+#  geom_vline(xintercept=0,color="red",linetype  = "dashed")
+
+#nadiffs  = diffs[is.na(diffs$Diff),]
+#nadiffpeople = unique(nadiffs$workerid)
+
+#nadiff = critical %>%
+#  filter(workerid %in%  nadiffpeople)  %>%
+#  droplevels() %>%
+#  group_by(workerid,key)  %>%
+#  summarize(Mean = mean(rt))
+
+#overall = nadiff %>%
+#  group_by(key) %>%
+#  summarize(OverallMean  = mean(Mean))
+
+#ggplot(nadiff, aes(x=Mean,fill=key)) +
+#  geom_histogram(position="identity",alpha=.5)  +
+#  geom_vline(xintercept=0,color="red",linetype  = "dashed")
+```
+
+**Response time, trial order and QUD**
+
+```{r response_time_order, echo=FALSE, fig.height=3, fig.width=9}
+order = critical %>%
+  group_by(slide_type,key,Answer.condition) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  mutate(slide_type_rename = ifelse(slide_type=="trial_1","first_half", ifelse(slide_type=="trial_2", "second_half", slide_type)))
+
+ggplot(order, aes(fill=key,x=Answer.condition,y=Mean)) +
+  geom_bar(stat="identity",position=position_dodge(.9)) +
+  scale_fill_manual(values = key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  ylab("mean rawRT")+
+  xlab("")+
+  labs(fill="response") +
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
+  facet_grid(~slide_type_rename)
+```
+
+**Response time, responder type and QUD**
+
+```{r response_time_responder, echo=FALSE, fig.height=4, fig.width=8}
+responder = critical %>%
+  group_by(workerid,key, .drop=FALSE) %>%
+  count(key) %>%
+  filter(key=="Yes") %>%
+  mutate(responder_type = ifelse(n>4,"semantic",ifelse(n<4,"pragmatic",ifelse(n==4,"inconsistent","NA"))))
+
+agr2 = critical %>%
+  merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
+  group_by(Answer.condition,key,responder_type) %>% 
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  filter(responder_type != "inconsistent")
+
+responder2 = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
+  geom_bar(stat="identity",position=position_dodge(.9)) +
+  scale_fill_manual(values = key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  xlab("") +
+  labs(fill="response") +
+  facet_grid(~responder_type)+
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=6)) +
+  ylim(0,2500)
+
+responder2
+
+#ggsave(responder2, file="../graphs/responder.pdf",width=4,height=2)
+
+```
+
+**Response time, age and QUD**
+
+```{r response_time_age, echo=FALSE, fig.height=4, fig.width=8}
+agr3 = critical %>%
+  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
+  mutate(age_bucket = ifelse(age<=25,"18-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA)))) %>%
+  group_by(Answer.condition,key,age_bucket) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  filter(!age_bucket == "NA") %>%
+  filter(!age_bucket == "26-44")
+
+age_time= ggplot(agr3, aes(fill=key,x=Answer.condition,y=Mean)) +
+  geom_bar(stat="identity",position=position_dodge(.9)) +
+  scale_fill_manual(values = key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  theme(plot.title = element_text(hjust =0.5),axis.text.x=element_text(angle=45,hjust=1,vjust=1))+
+  xlab("") +
+  labs(fill="response") +
+  facet_wrap(~age_bucket, scales="free_y") +
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+
+age_time
+
+#ggsave(age_time, file="../graphs/age_time.pdf",width=8,height=4)
+```
+
+**Response time, age, responder type and QUD**
+
+```{r response_time_age_responder, echo=FALSE}
+agr2 = critical %>%
+  merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
+  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
+  mutate(age_bucket = ifelse(age<=25,"0-25",ifelse(age<44,"26-44", ifelse(age>44,"45+",NA))))%>%
+  group_by(Answer.condition,key,responder_type,age_bucket) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
+  geom_bar(stat="identity",position=position_dodge(.9)) +
+  scale_fill_manual(values = key_col) +
+  geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
+  xlab("") +
+  labs(fill="response") +
+  facet_grid(age_bucket~responder_type)+
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+```
+
+**EXTRA: Semanticity and response time**
+```{r semanticity_rtime, eval=FALSE, fig.height=3, fig.width=6, include=FALSE}
+sem = critical %>%
+  group_by(workerid) %>%
+  summarize(Mean=mean(rt)) %>%
+  merge(d[ ,c("workerid","n")], by="workerid",all.x=TRUE) %>%
+  group_by(n) %>%
+  summarize(Mean=mean(Mean))
+
+ggplot(sem, aes(x=n, y=Mean)) +
+  geom_bar(stat = "identity") +
+  scale_color_manual(key_col) +
+  xlab("Number of semantic responses") +
+  scale_x_continuous(breaks=c(0:8))
+
+```
+
+**Models**
+```{r models1, eval=FALSE, include=FALSE}
+library(lme4)
+library(languageR)
+library(brms)
+library(lmerTest)
+
+nrow(critical)
+
+# 1.JUDGEMENTS - Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
+critical = critical %>%
+  mutate(numericKey = ifelse(key == "Yes",1,0)) %>%
+  mutate(numericKey = as.factor(numericKey))
+  
+m = glmer(numericKey ~ Answer.condition + (1|workerid), data=critical, family="binomial")
+summary(m)
+
+#BRMS 
+#m_brms = brm(numericKey ~ Answer.condition + (1|workerid), save_all_pars=TRUE, data=critical, iter=1000, family="binomial") #or gaussian
+#summary(m_brms)
+
+# 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
+
+critical_ckey = critical %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
+
+m2=lmer(logRT ~ Answer.condition*ckey + (1|workerid), data=critical_ckey)
+summary(m2)
+
+#m3=lmer(logRT ~ key + (1|workerid), data=critical_ckey)
+#summary(m3)
+
+# 3.RESPONDER TYPE - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type, responder type and their interaction
+critical_cresponder = critical %>%
+  merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
+  filter(responder_type != "inconsistent") %>%
+  mutate(responder_type = as.factor(responder_type)) %>%
+  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)))
+
+contrasts(critical_cresponder$key)
+contrasts(critical_cresponder$Answer.condition)
+contrasts(critical_cresponder$responder_type)
+
+table(critical_cresponder$responder_type)
+table(critical_cresponder$key)
+
+m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1|workerid), data=critical_cresponder)
+summary(m4)
+
+#
+m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1+ckey|workerid), data=critical_cresponder)
+summary(m4)
+#
+
+#only for all and any
+allany = critical_cresponder %>%
+  filter(Answer.condition != "no_QUD") %>%
+  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)), cAnswer.condition = as.numeric(Answer.condition) - mean(as.numeric(Answer.condition))) %>%
+  droplevels()
+
+m5 = lmer(logRT ~ ckey*cresponder_type*cAnswer.condition + (1|workerid), data=allany)
+summary(m5)
+
+#without centering?
+m5.simple = lmer(logRT ~ key*responder_type*Answer.condition - Answer.condition + (1|workerid), data=allany)
+summary(m5.simple)
+
+
+#semanticity instead of responder type 
+
+critical_sem = critical %>%
+  merge(responder[ ,c("workerid","n")], by="workerid",all.x=TRUE) %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
+  
+m6 = lmer(logRT ~ Answer.condition*n*ckey + (1|workerid), data=critical_sem)
+summary(m6)
+
+```
+

@@ -1,0 +1,375 @@
+<html>
+
+<head>
+	<title>QUD Relevance</title>
+
+    <!--JS-->
+
+    <!-- external general utilities -->
+    <script src="shared/js/jquery-1.11.1.min.js"></script>
+    <script src="shared/full-projects/jquery-ui/jquery-ui.min.js"></script>
+    <script src="shared/js/underscore-min.js"></script>
+    <!-- if you want to draw stuff: -->
+    <!-- <script src="shared/js/raphael-min.js"></script> -->
+    <script src="shared/js/uniqueturker.js"></script>
+
+    <!-- cocolab experiment logic -->
+    <script src="shared/js/exp-V2.js"></script>
+    <script src="shared/js/stream-V2.js"></script>
+
+    <!-- cocolab general utilities -->
+    <script src="shared/js/mmturkey.js "></script>
+    <script src="shared/js/browserCheck.js"></script>
+    <script src="shared/js/utils.js"></script>
+    <!-- if you want to draw cute creatures (depends on raphael): -->
+    <!-- <script src="shared/js/ecosystem.js"></script> -->
+
+    <!-- experiment specific helper functions -->
+    <!-- <script src="js/local-utils.js"></script> -->
+
+    <!--CSS-->
+    <link href="shared/full-projects/jquery-ui/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="shared/css/cocolab-style.css" rel="stylesheet" type="text/css"/>
+    <link href="css/local-style.css" rel="stylesheet" type="text/css"/>
+
+    <!-- experiment file -->
+    <script src="js/index.js"></script>
+    
+    <script type="text/JavaScript">
+    	$(document).ready(function(){
+	   	var ut_id = "35a1a045762b872be4cd6bbf1b4f1050";
+	   	if (UTWorkerLimitReached(ut_id)) {
+	    	$(".slide").hide();
+	    	$("body").html("You have already completed the maximum number of HITs allowed by this requester. Please click 'Return HIT' to avoid any impact on your approval rating.");
+		}});
+    </script>
+
+</head>
+
+<body onload="init();">
+	<noscript>This task requires JavaScript.</noscript>
+	
+	<div class="slide" id="bot" >
+		<h3>Are you a bot?</h3>
+		<p id="s"></p>
+		<p id="q"></p>
+		<input type="text" id="text_box"/></question>
+		<br><br><br>
+    	<div class="err1">
+    		<p2>Failing this question two more times will disqualify you from this study.</p2></div>
+    	<div class="err2">
+    		<p2>Failing this question one more time will disqualify you from this study.</p2></div>
+    	<div class="disq">
+    		<p2>You failed the question and you are disqualified.</p2></div>
+    	<div class="button">
+    		<button onclick="_s.button()">Continue</button></div>
+	</div>
+		
+	<div class="slide" id="i0" >
+		<img src="img/alps_lab.png" alt="Alps Lab"  style="width:400;height:192px;">
+   		<p id="instruct-text">You will hear some sentences. Your job is to answer yes or no based on whether you agree with these sentences or not. The HIT should take ~10 minutes. <br><br><strong>This HIT requires audio. Please complete it in a quiet place and make sure the sound is on.</strong></p>
+   		<button id="start_button" type="button">Start Experiment</button>
+    	<br><br><br>
+    	<p id="instruct-text" align="left"><i><small><small><strong><br>LEGAL INFORMATION</strong>:<br><br>We invite you to participate in a research study on language production and comprehension.<br>Your experimenter will ask you to do a linguistic task such as reading sentences or words, naming pictures or describing scenes, making up sentences of your own, or participating in a simple language game.<br><br>You will be paid for your participation at the posted rate.<br><br>There are no risks or benefits of any kind involved in this study.<br><br>If you have read this form and have decided to participate in this experiment, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled. You have the right to refuse to do particular tasks. Your individual privacy will be maintained in all published and written data resulting from the study.<br>You may print this form for your records.<br><br>CONTACT INFORMATION:<br>If you have any questions, concerns or complaints about this research study, its procedures, risks and benefits, you should contact the Protocol Director Meghan Sumner at <br>(650)-725-9336<br><br>If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906. You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306 USA.<br><br>If you agree to participate, please proceed to the study tasks.<br><br></small></small></i></p>
+    </div>
+
+    <div class="slide" id="check">
+    	<br>
+    	<h3><strong>Listen to the sentence.</strong></h3>
+    	<br>
+<!--     	<img src="img/sound.png" alt="speaker" align="center" style="height:100px">
+ -->    <audio controls id="audio_check">
+			<source src="audio/four.wav" type="audio/wav">
+			 Your browser does not support the audio element.
+		</audio>
+		<br><br>
+		<div class="question">
+		<p>How many gumballs did you get?</p>
+			<br>
+	     	<label><input type="radio"  name="number" value="Two"/>Two</label>
+	     	<label><input type="radio"  name="number" value="Three"/>Three</label>
+	    	<label><input type="radio"  name="number" value="Four"/>Four</label>
+	    	<label><input type="radio"  name="number" value="Five"/>Five</label>
+	    	<label><input type="radio"  name="number" value="Six"/>Six</label>
+	    	<label><input type="radio"  name="number" value="Seven"/>Seven</label>
+	    	<label><input type="radio"  name="number" value="Eight"/>Eight</label>
+    	<br><br><br><br>
+    	<button onclick="_s.button()">Continue</button>
+    	<div class="err">
+    		<br><p2><strong>Please relisten to the audio and select the correct response. Failing this question three times will disqualify you from this study.</strong></p2></div>
+    	</div>
+    </div>
+		
+	<!--Instruction slide-->
+	<div class="slide" id="instructions">
+		<div class="tut_instructions">
+	  		<h3><strong><big>Context</big></strong></h3>
+	  		<br>
+	  		<img src="img/0.jpg" alt="gumball_machine" align="right" style="height:250px">
+	  		<p2 align="left">You are at a candy store and are testing a row of gumball machines. These are special gumball machines that say how many gumballs you got. However, this report is sometimes faulty.</p2>
+	  		<br><br>
+	  		<img src="img/store_worker_1.jpg" alt="store_worker_sitting" align="left">
+	  		<br><br><br><br><br><br><br>
+	  		<p2 align="right">The store worker tells you that his boss has threatened to fire him if the gumball machines are left empty, and he really needs this job. He cannot see the machines from the register, but he can normally tell how full they are by the machines' statements.</p2>
+	  		<br><br><br>
+	  		<img src="img/store_worker_2.jpg" alt="store_worker_standing" align="right" style="height:250px";>
+	  		<p2 align="left">He asks you to tell him if the statement is right or wrong, so that he will know if a machine is empty and needs to be refilled.</p2>
+	  		<br><br>
+	  		<p2 align="left"><strong>After you hear the statement, you have 4 seconds to notify the store worker, so please make a decision as quickly as possible.</strong></p2>
+	  		<br><br><br>
+	  		<p2><strong><big>Press SPACE to continue to examples</big></strong></p2>
+	  	</div>
+	  	<div class="tut_key_instructions">
+	  		<br><br><br><br>
+	  		<p2>Place your right index finger on the <strong>J</strong> key and left index finger on the <strong>F</strong> key.<br><br>If you agree with the statement, press <strong>J</strong>, if you disagree with the statement, press <strong>F.</strong><br>Use your thumb to press <strong>SPACE</strong> and don't move your index fingers.</p2>
+	  		<br><br>
+	  		<p2><strong>Remember, after you hear the statement, you have 4 seconds to notify the store worker.</strong></p2>
+			<br><br><br>
+	  		<img src="img/keypress.jpg" alt="keyboard" align="center" style="height:400px">
+	  		<br><br><br><br><br>
+	  		<p2><strong><big>Press SPACE to start the tutorial</big></strong></p2>
+	  	</div>
+	  	<div class="tut_initial_gumball">
+  			<img src="img/initial.jpg" style="height:500px">
+  		</div>		
+		<div class="tut_final_gumball">
+			<audio id="tut_kaching">
+				<source src="audio/kaching.wav" type="audio/wav">
+			 	Your browser does not support the audio element.
+			</audio>
+		   	<img src="img/13.jpg" style="height:500px">
+		   	<div class="tut_pressyes">
+		   	<br>
+		   	<p2 class="top"><big>Press the <strong>"YES" (J)</strong> key to alert the worker that you agree with the statement.</big></p2></div>
+			<audio id="tut_stim">
+				<source src="audio/all.wav" type="audio/wav">
+				Your browser does not support the audio element.
+			</audio>
+		</div>		
+   		<div class="tut_agreed">
+   			<br><br><br>
+    		<p2 align="left"><big><big>You let the store worker know that you agree with the statement. He therefore knows that the machine is empty and that he needs to refill the machine.</big></big></p2>
+    		<br><br><br>
+    		<img src="img/store_worker_gumball.jpg" align="center" style="height:350px";>
+    		<br>
+    		<p2><strong><big>Press SPACE to continue to next demo</big></strong></p2>
+    	</div>
+    	<div class="tut_final2_gumball">
+    		<audio id="tut_stim2">
+				<source src="audio/none.wav" type="audio/wav">
+				Your browser does not support the audio element.
+			</audio>
+    		<img src="img/10.jpg" style="height:500px">
+    		<div class="tut_pressno">
+    		<br>
+		   	<p2 class="top"><big>Press the <strong>"NO" (F)</strong> key to alert the worker that you disagree with the statement.</big></p2></div>
+		</div>
+		<div class="tut_disagreed">
+   			<br><br><br><br>
+    		<p2 class="left"><big><big>You let the store worker know that you disagreed with the statement. He therefore knows that the machine is not empty and that he does not need to refill the machine.</big></big></p2>
+    		<br><br><br>
+    		<img src="img/store_worker_gumball.jpg" align="center" style="height:350px";>
+    		<br><br><br>
+    		<p2><strong><big>Press SPACE to continue</big></strong></p2>
+    	</div>
+    	<div class="tut_warning">
+    		<br>
+    		<p2><big><big><strong>Be Careful!</strong></big></big></p2>
+    		<br><br><br>
+    		<img src="img/13.jpg" align="left" style="height:250px">
+    		<p2><big>One time, someone got this many gumballs and was told "You got all of the gumballs."<br><br>They pressed "NO" telling the store worker that they disagreed with the statement. He thought the machine was not empty and that he did not need to refill it. He was fired.</big></p2>
+    		<br>
+    		<img src="img/store_worker_fired.jpg" align="center" style="height:300px">
+    		<br><br><br>
+    		<p2><strong><big>Press SPACE to continue to quiz</big></strong></p2>
+    	</div>
+		<div class="comprehension">
+			<h3><strong><big>Quiz</big></strong></h3>
+			<br><br>
+	  		<p>When will the store worker be fired?</p>
+	  			<label><input type="radio" text-align="left" name="fired" value="Empty"/>When the machines are empty.</label><br>
+		     	<label><input type="radio" text-align="left" name="fired" value="Jam"/>When the machines jam.</label><br>
+		    	<label><input type="radio" text-align="left" name="fired" value="Explode"/>When the machines explode.</label><br>
+		    	<label><input type="radio" text-align="left" name="fired" value="Silent"/>When the machines don't make a sound.</label><br>
+	  		<br><br><br><br><br>
+	  		<p2><strong><big>Press SPACE to continue</big></strong></p2>
+	  		<!-- <button onclick="_s.button()">Continue</button> -->
+		  	<div class="err_empty">
+		    	<p>Please select one of the answers.</p>
+		    </div>
+	    </div>
+	    <div class="err_wrong">
+	    	<br><br>
+	    	<p>You gave the wrong answer.</p><br><br><br>
+	    	<p2><strong><big>Press SPACE to go back to tutorial</big></strong></p2>
+	    </div>
+		
+	</div>
+
+	<div class="slide" id="before_practice">
+  		<br><br><br>
+  		<p2>Let's start with four practice trials.<br>Please make sure that your index fingers are on the <strong>J</strong> and <strong>F</strong> keys.</p2>
+  		<br><br>
+  		<p2><strong>Remember, after you hear the statement, you have 4 seconds to notify the store worker.</strong></p2>
+  		<br><br><br>
+  		<p2><strong><big>Press SPACE to start the practice trials</big></strong></p2>
+	</div>
+
+	<div class="slide" id="practice">
+  		<div class = "initial_gumball">
+  			<p class="initial_image"></p></div>
+		<div class = "final_gumball">
+			<audio id="kaching">
+			  <source src="audio/kaching.wav" type="audio/wav">
+			  Your browser does not support the audio element.</audio>
+		   	<p class="final_image"></p>
+		   	<audio id="stim">
+				<source id="wav_src" src="" type="audio/wav">
+				Your browser does not support the audio element.</audio>
+			<audio id="critical_stop">
+				<source src="audio/criticalstop.wav" type="audio/wav">
+				Your browser does not support the audio element.</audio></div>	
+   		<div class = "transition">
+   			<br><br>
+    		<p2><strong>Press SPACE to continue</strong></p></div>
+  	</div>
+
+  	<div class="slide" id="before_trial">
+  		<br><br><br>
+  		<p2>Great! Now we can start the real experiment.<br>Please make sure that your index fingers are on the <strong>J</strong> and <strong>F</strong> keys.<br><br>Remember: <strong>J</strong> means "agree" and <strong>F</strong> means "disagree"!</p2>
+  		<br><br><br>
+  		<p2><strong><big>Press SPACE to start the experiment</big></strong></p2>
+	</div>
+
+  	<div class="slide" id="trial1">
+  		<div class = "initial_gumball">
+  			<p class="initial_image"></p>
+  		</div>
+		<div class = "final_gumball">
+			<audio id="kaching">
+			  <source src="audio/kaching.wav" type="audio/wav">
+			  Your browser does not support the audio element.</audio>
+		   	<p class="final_image"></p>
+		   	<audio id="stim">
+				<source id="wav_src" src="" type="audio/wav">
+				Your browser does not support the audio element.</audio>
+			<audio id="critical_stop">
+				<source src="audio/criticalstop.wav" type="audio/wav">
+				Your browser does not support the audio element.</audio>
+		</div>	
+   		<div class = "transition">
+   			<br><br>
+    		<p2><strong>Press SPACE to continue</strong></p>
+    	</div>
+  	</div>
+
+  	<div class="slide" id="comprehension">
+  		<div class="quiz">
+			<h3><strong><big>Quiz</big></strong></h3>
+			<br><br>
+		  	<p>When will the store worker be fired?</p>
+			    <label><input type="radio" text-align="left" name="fired" value="Explode"/>When the machines explode.</label><br>
+			    <label><input type="radio" text-align="left" name="fired" value="Empty"/>When the machines are empty.</label><br>
+			    <label><input type="radio" text-align="left" name="fired" value="Silent"/>When the machines don't make a sound.</label><br>
+			    <label><input type="radio" text-align="left" name="fired" value="Jam"/>When the machines jam.</label><br>
+		  	<br><br><br><br><br>
+		  	<p2><strong><big>Press SPACE to continue to experiment</big></strong></p2></div>
+	  	<div class="err_empty">
+		    	<p>Please select one of the answers.</p></div>
+		<div class="err_wrong">
+		    	<p>You gave the wrong answer. Please try again.</p></div>
+	</div>
+
+	<div class="slide" id="trial2">
+  		<div class = "initial_gumball">
+  			<p class="initial_image"></p>
+  		</div>
+		<div class = "final_gumball">
+			<audio id="kaching">
+			  <source src="audio/kaching.wav" type="audio/wav">
+			  Your browser does not support the audio element.</audio>
+		   	<p class="final_image"></p>
+		   	<audio id="stim">
+				<source id="wav_src" src="" type="audio/wav">
+				Your browser does not support the audio element.</audio>
+			<audio id="critical_stop">
+				<source src="audio/criticalstop.wav" type="audio/wav">
+				Your browser does not support the audio element.</audio>
+		</div>	
+   		<div class = "transition">
+   			<br><br>
+    		<p2><strong>Press SPACE to continue</strong></p>
+    	</div>
+  	</div>
+
+	<div class="slide"  id="subj_info">
+	    <div class="long_form">
+	      <div class="subj_info_title">Additional information</div>
+	      <p class="info">Answering these questions is optional, but will help us understand your answers.</p>
+	      <p>Did you read the instructions and do you think you did the HIT correctly?</p>
+	      <label><input type="radio"  name="assess" value="No"/>No</label>
+	      <label><input type="radio"  name="assess" value="Yes"/>Yes</label>
+	      <label><input type="radio"  name="assess" value="Confused"/>I was confused</label>
+
+	      <p>Were there any problems or bugs in the experiment?</p>
+	      <textarea id="problems" rows="2" cols="50"></textarea>
+
+	      <p>What do you think is a fair price for the work you did?</p>
+	      <textarea id="fairprice" rows="1" cols="10"></textarea>
+
+	      <p>Gender:
+	        <select id="gender">
+	          <label><option value=""/></label>
+	          <label><option value="Male"/>Male</label>
+	          <label><option value="Female"/>Female</label>
+	          <label><option value="Other"/>Other</label>
+	        </select>
+	      </p>
+
+	      <p>Age: <input type="text" id="age"/></p>
+
+	      <p>Level Of Education:
+	        <select id="education">
+	          <label><option value="-1"/></label>
+	          <label><option value="0"/>Some High School</label>
+	          <label><option value="1"/>Graduated High School</label>
+	          <label><option value="2"/>Some College</label>
+	          <label><option value="3"/>Graduated College</label>
+	          <label><option value="4"/>Hold a higher degree</label>
+	        </select>
+	      </p>
+
+	      <p>Native Language: <input type="text" id="language"/></p>
+	      <label>(the language(s) spoken at home when you were a child)</label>
+
+	      <p>Did you enjoy the hit?</p>
+	      <select id="enjoyment">
+	        <label><option value="-1"></option></label>
+	        <label><option value="0">Worse than the Average HIT</option></label>
+	        <label><option value="1" >An Average HIT</option></label>
+	        <label><option value="2">Better than average HIT</option></label>
+	      </select>
+
+	      <p>We would be interested in any comments you have about this experiment. Please type them here:</p>
+	      <textarea id="comments" rows="3" cols="50"></textarea>
+	      <br/>
+	      <button onclick="_s.submit()">Submit</button>
+	    </div>
+	</div>
+
+
+	<div id="thanks" class="slide js" >
+	    <p  class="big">Thanks for your Time!</p>
+	</div>
+
+
+  	<div class="progress">
+    	<span>Progress:</span>
+    	<div class="bar-wrapper">
+      	<div class="bar" width="0%">
+      	</div>
+    	</div>
+  	</div>
+
+</body>
+</html>

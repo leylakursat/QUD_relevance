@@ -1,9 +1,8 @@
 ---
 title: 'Experiment 4: summa with time pressure'
-#output: rmarkdown::github_document
 output:
+  pdf_document: default
   html_document: default
-  #pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -88,9 +87,9 @@ practice = df %>%
   count(WrongAnswer) %>% 
   filter(WrongAnswer == TRUE & n>2)
 
-table(practice$n)
+#table(practice$n)
 
-df = df[!(df$workerid %in% practice$workerid),]
+#df = df[!(df$workerid %in% practice$workerid),]
 ```
 **Participants who got the audio check wrong more than one once:**
 ```{r audio_exclude, echo=FALSE}
@@ -101,9 +100,9 @@ audio_fail = df %>%
   count(WrongAnswer) %>%
   filter(WrongAnswer == TRUE & n>1)
 
-table(audio_fail$workerid)
+#table(audio_fail$workerid)
 
-df = df[!(df$workerid %in% audio_fail$workerid ),]
+#df = df[!(df$workerid %in% audio_fail$workerid ),]
 ```
 **Participants who got the second comprehension question wrong more than twice:**
 ```{r comp_exclude, echo=FALSE}
@@ -315,7 +314,7 @@ critical = df %>%
   filter(str_detect(image,"13")) %>%
   droplevels()
 
-nrow(critical) #6075
+nrow(critical) #7004
 ```
 
 **Total number of critical trials with late responses removed:**
@@ -328,7 +327,8 @@ critical = df %>%
   filter(str_detect(key,"Late", negate = TRUE)) %>%
   droplevels()
 
-nrow(critical) #6075
+nrow(critical) #6903
+
 ```
   
 
@@ -362,10 +362,9 @@ pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
   xlab("") +
   theme(axis.text.y=element_text(size=9), axis.title=element_text(size=8), axis.text.x=element_text(size=7))
 
-#pragmatic
+pragmatic
 
-#ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=2.3,height=3)
-
+ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=2.3,height=3)
 
 ```
 
@@ -375,41 +374,47 @@ pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
 d = critical %>%
   #modify_if(is.integer, as.factor) %>%
   group_by(workerid,key,.drop=FALSE) %>%
-  count() %>% 
+  summarise(numPragmatic = n()) %>%
   filter(key=="No") %>%
   merge(critical[ ,c("workerid","Answer.condition")], by="workerid",all.x=TRUE) %>%
   unique() %>%
-  group_by(Answer.condition,n) %>%
+  group_by(Answer.condition,numPragmatic) %>%
   count() %>%
-  mutate(Proportion = nn/847)
+  group_by(Answer.condition) %>%
+  mutate(total_condition = sum(n)) %>%
+  mutate(prop_condition = n/total_condition) %>%
+  group_by(numPragmatic) %>%
+  mutate(total_numPragmatic = sum(n)) %>%
+  mutate(prop_numPragmatic = n/total_numPragmatic)
 
-#View(d)
-
-#table(d$Answer.condition,d$n)
-
-count = ggplot(d, aes(x=n,fill=Answer.condition)) +
-  scale_fill_manual(values = cond_col) +
-  geom_histogram(position=position_dodge(.5), bins=10, binwidth = 0.3) +
-  xlab("Number of semantic responses") +
-  labs(fill="QUD") +
-  scale_x_continuous(breaks=c(0:8))
-
-count
-
-proportion = ggplot(d, aes(x=n, y=Proportion, fill=Answer.condition)) +
+proportion = ggplot(d, aes(x=numPragmatic, y=prop_numPragmatic, fill=Answer.condition)) +
+  #geom_bar(stat="identity", position = position_dodge(.6), width = 0.6) +
   geom_bar(stat="identity") +
   scale_fill_manual(values = cond_col) +
   xlab("Number of pragmatic responses") +
   ylab("Proportion of participants") +
   labs(fill="QUD") +
   scale_x_continuous(breaks=c(0:8)) +
-  ylim(0,0.6) +
   #scale_y_continuous(limits=c(0:1)) +
-  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=10))
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=7), axis.text.x=element_text(size=10))
 
-#proportion
+proportion
 
-#ggsave(proportion, file="../graphs/count_pragmatic.pdf",width=4,height=2)
+#ggsave(proportion, file="../graphs/pragmatic_proportion_qud.pdf",width=4,height=2)
+
+proportion2 = ggplot(d, aes(x=numPragmatic, y=prop_condition, fill=Answer.condition)) +
+  geom_bar(stat="identity", position = position_dodge(.6), width = 0.6) +
+  scale_fill_manual(values = cond_col) +
+  xlab("Number of pragmatic responses") +
+  ylab("Proportion of participants in QUD") +
+  labs(fill="QUD") +
+  scale_x_continuous(breaks=c(0:8)) +
+  #scale_y_continuous(limits=c(0:1)) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=7), axis.text.x=element_text(size=10))
+
+proportion2
+
+#ggsave(proportion2, file="../graphs/pragmatic_proportion_answer.pdf",width=4,height=2)
 
 ```
 
@@ -521,7 +526,7 @@ response_time = ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
 
 response_time
 
-ggsave(response_time, file="../graphs/response_time.pdf",width=4,height=2)
+#ggsave(response_time, file="../graphs/response_time.pdf",width=4,height=2)
 ```
 
 **Response time, trial order and QUD**
@@ -559,8 +564,8 @@ agr2 = critical %>%
   group_by(Answer.condition,key,responder_type) %>% 
   summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
   ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) #%>%
-  #filter(responder_type != "inconsistent")
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  filter(responder_type != "inconsistent")
 
 responder2 = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_bar(stat="identity",position=position_dodge(.9)) +
@@ -569,11 +574,13 @@ responder2 = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   xlab("") +
   labs(fill="response") +
   facet_grid(~responder_type)+
-  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=6)) #+
+  ylim(0,2500)
 
 responder2
 
-#ggsave(responder, file="../graphs/responder.pdf",width=8,height=4)
+#ggsave(responder2, file="../graphs/responder.pdf",width=4,height=2)
 
 ```
 
@@ -628,14 +635,23 @@ ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
 ```
 
 **EXTRA: Semanticity and response time**
-```{r semanticity_rtime, echo=FALSE, fig.height=3, fig.width=6}
+```{r semanticity_rtime, eval=FALSE, fig.height=3, fig.width=6, include=FALSE}
 sem = critical %>%
-  group_by(workerid) %>%
+  group_by(workerid,key,.drop=FALSE) %>%
+  summarize(numPragmatic = n()) %>%
+  filter(key=="No")%>%
   summarize(Mean=mean(rt)) %>%
-  merge(d[ ,c("workerid","n")], by="workerid",all.x=TRUE) %>%
+  merge(critical[ ,c("workerid","rt")], by="workerid",all.x=TRUE) %>%
   group_by(n) %>%
   summarize(Mean=mean(Mean))
-
+  
+d = critical %>%
+  #modify_if(is.integer, as.factor) %>%
+  group_by(workerid,key,.drop=FALSE) %>%
+  summarise(numPragmatic = n()) %>%
+  filter(key=="No") %>%  
+  
+  
 ggplot(sem, aes(x=n, y=Mean)) +
   geom_bar(stat = "identity") +
   scale_color_manual(key_col) +
@@ -645,56 +661,60 @@ ggplot(sem, aes(x=n, y=Mean)) +
 ```
 
 
-
-
 **Models**
 ```{r models1, eval=FALSE, include=FALSE}
 library(lme4)
 library(languageR)
 library(brms)
+library(lmerTest)
 
-# Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
+nrow(critical)
+
+# 1.JUDGEMENTS - Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
 critical = critical %>%
-  mutate(numericKey = ifelse(key == "Yes",1,0)) #%>%
+  mutate(numericKey = ifelse(key == "Yes",1,0)) %>%
   mutate(numericKey = as.factor(numericKey))
   
 m = glmer(numericKey ~ Answer.condition + (1|workerid), data=critical, family="binomial")
 summary(m)
 
-View(critical)
-
 #BRMS 
-#key should be 0 and 1, than center???
+#m_brms = brm(numericKey ~ Answer.condition + (1|workerid), save_all_pars=TRUE, data=critical, iter=1000, family="binomial") #or gaussian
+#summary(m_brms)
 
-m_brms = brm(numericKey ~ Answer.condition + (1|workerid), save_all_pars=TRUE, data=critical, iter=1000, family="binomial") #or gaussian
-summary(m_brms)
+# 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
 
-# Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
-m2=lmer(logRT ~ Answer.condition*key + (1|workerid), data=critical)
+critical_ckey = critical %>%%>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
+
+m2=lmer(logRT ~ Answer.condition*ckey + (1|workerid), data=critical_ckey)
 summary(m2)
 
-#EXTRA
-# same models with responder type (and maybe age?)
-critical_new = critical %>%
+# 3.RESPONDER TYPE - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type, responder type and their interaction
+critical_cresponder = critical %>%
   merge(responder[ ,c("workerid","responder_type")], by="workerid",all.x=TRUE) %>%
-  merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
+  #merge(demo[ ,c("workerid","age")], by="workerid",all.x=TRUE) %>%
   filter(responder_type != "inconsistent") %>%
   mutate(responder_type = as.factor(responder_type)) %>%
   mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)))
-View(critical_new)
 
-contrasts(critical_new$key)
-contrasts(critical_new$Answer.condition)
-contrasts(critical_new$responder_type)
+contrasts(critical_cresponder$key)
+contrasts(critical_cresponder$Answer.condition)
+contrasts(critical_cresponder$responder_type)
 
-table(critical_new$responder_type)
-table(critical_new$key)
+table(critical_cresponder$responder_type)
+table(critical_cresponder$key)
 
-library(lmerTest)
-m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1|workerid), data=critical_new)
+m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1|workerid), data=critical_cresponder)
 summary(m4)
 
-allany = critical_new %>%
+#
+m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1+ckey|workerid), data=critical_cresponder)
+summary(m4)
+#
+
+#only for all and any
+allany = critical_cresponder %>%
   filter(Answer.condition != "no_QUD") %>%
   mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)), cAnswer.condition = as.numeric(Answer.condition) - mean(as.numeric(Answer.condition))) %>%
   droplevels()
@@ -702,9 +722,9 @@ allany = critical_new %>%
 m5 = lmer(logRT ~ ckey*cresponder_type*cAnswer.condition + (1|workerid), data=allany)
 summary(m5)
 
+#without centering?
 m5.simple = lmer(logRT ~ key*responder_type*Answer.condition - Answer.condition + (1|workerid), data=allany)
 summary(m5.simple)
-
 
 ```
 
