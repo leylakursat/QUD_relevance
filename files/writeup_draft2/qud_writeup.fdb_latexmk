@@ -1,14 +1,14 @@
 # Fdb version 3
-["bibtex qud_writeup"] 1571982409 "qud_writeup.aux" "qud_writeup.bbl" "qud_writeup" 1571982409
+["bibtex qud_writeup"] 1574241767 "qud_writeup.aux" "qud_writeup.bbl" "qud_writeup" 1574241767
   "Science.bst" 0 -1 0 ""
   "qud_writeup.aux" 1571866196 1230 8a99717440dcbe28f249fc5df0f4c434 ""
   "scibib.bib" 0 -1 0 ""
   (generated)
-  "qud_writeup.blg"
   "qud_writeup.bbl"
-["pdflatex"] 1571866196 "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.tex" "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.pdf" "qud_writeup" 1571982409
+  "qud_writeup.blg"
+["pdflatex"] 1571866196 "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.tex" "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.pdf" "qud_writeup" 1574241767
   "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.aux" 1571866196 1230 8a99717440dcbe28f249fc5df0f4c434 ""
-  "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.tex" 1571982409 15715 3675791a47c76718001b99236a074a16 ""
+  "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.tex" 1574241767 15715 3675791a47c76718001b99236a074a16 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm" 1480098701 1324 c910af8c371558dc20f2d7822f66fe64 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1480098701 1524 4414a8315f39513458b80dfc63bff03a ""
@@ -68,10 +68,10 @@
   "models/exp4_model2.png" 1571768950 129945 bf241d2524701c91f5beb45cdf333068 ""
   "qud_writeup.aux" 1571866196 1230 8a99717440dcbe28f249fc5df0f4c434 ""
   "qud_writeup.bbl" 0 -1 0 "bibtex qud_writeup"
-  "qud_writeup.tex" 1571982409 15715 3675791a47c76718001b99236a074a16 ""
+  "qud_writeup.tex" 1574241767 15715 3675791a47c76718001b99236a074a16 ""
   (generated)
+  "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.log"
+  "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.pdf"
+  "qud_writeup.aux"
   "qud_writeup.log"
   "qud_writeup.pdf"
-  "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.log"
-  "qud_writeup.aux"
-  "/Users/leylakursat/Desktop/repos/QUD_relevance/files/writeup_2/qud_writeup.pdf"

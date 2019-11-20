@@ -685,7 +685,7 @@ quarter_4 = [
     };
 
   //blocks of the experiment:
-  exp.structure=["bot", "i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "comprehension", "trial2", 'subj_info', 'thanks'];
+  exp.structure=["i0", "check","instructions", "before_practice", "practice", "before_trial", "trial1", "comprehension", "trial2", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:

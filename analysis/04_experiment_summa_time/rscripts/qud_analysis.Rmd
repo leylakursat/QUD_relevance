@@ -126,9 +126,14 @@ df = df[!(df$workerid %in% comp2_fail$workerid ),]
 yes_list = c("summa2","summa5","summa8","summa11",
              "all13",
              "none0",
-             "zero0","two2","five5","eight8","eleven11","thirteen13")
+             "two2","five5","eight8","eleven11")
 
-exclude_list = c("seven11","eight8","eight13","nine5","ten5","ten13","eleven0","eleven8","eleven11","twelve2","thirteen8")
+# if we don't exlude any stimuli from accuracy analysis -- 268 people excluded
+#seven8 and up --262 people excluded
+exclude_list_1 = c("seven11","eight8","eight13","ten13","eleven8","eleven11","thirteen8")
+#ambiguous stimuli -- 260 people excluded
+exclude_list_2 = c("eight13","four5","seven11","two5","one11","ten13","five13","two8")
+# if both lists are excluded -- 255 people excluded
 
 accuracy = df %>% 
   filter(str_detect(slide_type,"trial")) %>% 
@@ -136,7 +141,8 @@ accuracy = df %>%
   mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
   filter(str_detect(concat,"summa13", negate = TRUE)) %>%
   filter(!key=="Late") %>%
-  filter(!concat %in% exclude_list) %>%
+  filter(!concat %in% exclude_list_1) %>%
+  filter(!concat %in% exclude_list_2) %>%
   mutate(rightAnswer = ifelse(concat %in% yes_list,"Yes","No")) %>%
   mutate(gaveRightAnswer = ifelse(key==rightAnswer,"1","0"))
 
@@ -149,7 +155,6 @@ low_accuracy = accuracy %>%
   group_by(workerid,gaveRightAnswer) %>%
   count(gaveRightAnswer) %>%
   merge(answerNumber[ ,c("workerid","answerNm")], by="workerid",all.x=TRUE) %>%
-  #mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/64,0)) %>%
   mutate(accuracy=ifelse(gaveRightAnswer=="1",n*100/answerNm,0)) %>%
   filter(gaveRightAnswer=="1") %>%
   filter(accuracy < 85)
@@ -287,7 +292,38 @@ ggplot(non_critical,aes(x=image, y=count ,fill=key))+
   scale_fill_manual(values=key_col) +
   ylab("count") +
   labs(fill="response") +
-  facet_wrap(~audio, scales="free_x")
+  facet_wrap(~audio, scales="free_y")
+
+#############new
+yes_list = c("summa2","summa5","summa8","summa11",
+             "all13",
+             "none0",
+             "two2","five5","eight8","eleven11")
+
+no_list = c("summa0","all0","all2","all5","all8","all11","none2","none8","none13",
+            "three0","five0","nine5","ten5","eleven0","eleven8","twelve2","thirteen8")
+
+amb_list = c("two5","two8","one11","four5","seven11","five13","eight13","ten13")
+
+non_critical_2 = trials %>%
+  mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
+  filter(str_detect(concat,"summa13", negate = TRUE)) %>%
+  filter(key != "Late") %>%
+  mutate(expectedAns = ifelse(concat %in% yes_list, "yes", ifelse(concat %in% no_list, "no", ifelse(concat %in% amb_list, "amb", "NA")))) %>%
+  group_by(expectedAns,key,Answer.condition) %>%
+  summarize(count = n()) %>%
+  group_by(expectedAns, Answer.condition) %>%
+  mutate(sum = sum(count), proportion = count/sum)
+
+expected_resp = ggplot(non_critical_2,aes(x=key, y=proportion, fill=as.factor(expectedAns)))+
+  geom_bar(stat = "identity", position=position_dodge(.9)) +
+  ylab("proportion") +
+  facet_wrap(~Answer.condition)
+
+expected_resp
+
+#ggsave(expected_resp, file="../graphs/expected_resp.pdf",width=4,height=2)
+
 ```
 
 **Response time:**
@@ -302,6 +338,24 @@ ggplot(non_critical,aes(x=image, y=Mean ,fill=key))+
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
   facet_wrap(~audio, scales="free_x")
 
+non_critical_3 = trials %>%
+  mutate(concat = str_c(str_sub(audio,1,end=-5),image)) %>%
+  filter(str_detect(concat,"summa13", negate = TRUE)) %>%
+  filter(key != "Late") %>%
+  mutate(expectedAns = ifelse(concat %in% yes_list, "yes", ifelse(concat %in% no_list, "no", ifelse(concat %in% amb_list, "amb", "NA")))) %>%
+  group_by(expectedAns,key,Answer.condition) %>%
+  summarize(Median=median(rt),Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt),SD=sd(rt),Var=var(rt),count=n()) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+expected_resp_rt = ggplot(non_critical_3,aes(x=key, y=Mean, fill=as.factor(expectedAns)))+
+  geom_bar(stat = "identity", position=position_dodge(.9)) +
+  ylab("mean rt") +
+  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3) +
+  facet_wrap(~Answer.condition)
+
+expected_resp_rt
+
 ```
 
 ###Critical Trials
@@ -314,7 +368,7 @@ critical = df %>%
   filter(str_detect(image,"13")) %>%
   droplevels()
 
-nrow(critical) #7004
+nrow(critical) #7004 #7033
 ```
 
 **Total number of critical trials with late responses removed:**
@@ -327,8 +381,9 @@ critical = df %>%
   filter(str_detect(key,"Late", negate = TRUE)) %>%
   droplevels()
 
-nrow(critical) #6903
+nrow(critical) #6903 #6929
 
+#write.csv(critical, file = "exp4_critical.csv")
 ```
   
 
@@ -360,7 +415,7 @@ pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
   geom_errorbar(aes(ymin=YMin, ymax=YMax, width=.25)) +
   ylab("Proportion of pragmatic responses") +
   xlab("") +
-  theme(axis.text.y=element_text(size=9), axis.title=element_text(size=8), axis.text.x=element_text(size=7))
+  theme(axis.text.y=element_text(size=12), axis.title=element_text(size=10), axis.text.x=element_text(size=8))
 
 pragmatic
 
@@ -410,11 +465,12 @@ proportion2 = ggplot(d, aes(x=numPragmatic, y=prop_condition, fill=Answer.condit
   labs(fill="QUD") +
   scale_x_continuous(breaks=c(0:8)) +
   #scale_y_continuous(limits=c(0:1)) +
-  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=7), axis.text.x=element_text(size=10))
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=7), axis.text.x=element_text(size=10))+
+  ylim(0,0.6)
 
 proportion2
 
-#ggsave(proportion2, file="../graphs/pragmatic_proportion_answer.pdf",width=4,height=2)
+ggsave(proportion2, file="../graphs/pragmatic_proportion_answer.pdf",width=4,height=2)
 
 ```
 
@@ -575,7 +631,7 @@ responder2 = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   labs(fill="response") +
   facet_grid(~responder_type)+
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
-  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=6)) #+
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=6)) +
   ylim(0,2500)
 
 responder2
@@ -634,30 +690,32 @@ ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=3)
 ```
 
-**EXTRA: Semanticity and response time**
+**EXTRA: Pragmaticity and response time**
 ```{r semanticity_rtime, eval=FALSE, fig.height=3, fig.width=6, include=FALSE}
-sem = critical %>%
-  group_by(workerid,key,.drop=FALSE) %>%
+worker_prag = critical %>%
+  group_by(workerid,key, .drop =FALSE) %>%
   summarize(numPragmatic = n()) %>%
-  filter(key=="No")%>%
-  summarize(Mean=mean(rt)) %>%
-  merge(critical[ ,c("workerid","rt")], by="workerid",all.x=TRUE) %>%
-  group_by(n) %>%
-  summarize(Mean=mean(Mean))
-  
-d = critical %>%
-  #modify_if(is.integer, as.factor) %>%
-  group_by(workerid,key,.drop=FALSE) %>%
-  summarise(numPragmatic = n()) %>%
-  filter(key=="No") %>%  
-  
-  
-ggplot(sem, aes(x=n, y=Mean)) +
+  filter(key=="No")
+
+pragmaticity = critical %>%
+  merge(worker_prag[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
+  #filter(key=="No") %>%
+  group_by(numPragmatic,Answer.condition) %>%
+  summarize(Mean = mean(rt))
+
+prg2 = ggplot(pragmaticity, aes(x=numPragmatic, y=Mean)) +
   geom_bar(stat = "identity") +
   scale_color_manual(key_col) +
-  xlab("Number of semantic responses") +
-  scale_x_continuous(breaks=c(0:8))
+  xlab("Number of pragmatic responses") +
+  ylab("mean RT of all responses") +
+  #ylab("mean RT of responses") +
+  scale_x_continuous(breaks=c(0:8)) +
+  facet_wrap(~Answer.condition)
+  
+prg2
 
+ggsave(prg2, file="../graphs/pragmaticity_rt_qud.pdf",width=4,height=2)
+  
 ```
 
 
@@ -684,7 +742,7 @@ summary(m)
 
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
 
-critical_ckey = critical %>%%>%
+critical_ckey = critical %>%
   mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
 
 m2=lmer(logRT ~ Answer.condition*ckey + (1|workerid), data=critical_ckey)
@@ -711,6 +769,16 @@ summary(m4)
 #
 m4 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1+ckey|workerid), data=critical_cresponder)
 summary(m4)
+
+m5 = lmer(logRT ~ cresponder_type*ckey + (1+ckey|workerid), data=critical_cresponder)
+summary(m5)
+
+anova(m4,m6)
+
+m6 = lmer(logRT ~ Answer.condition*ckey+Answer.condition*cresponder_type + Answer.condition+ ckey:cresponder_type + (1+ckey|workerid), data=critical_cresponder)
+summary(m6)
+
+
 #
 
 #only for all and any
@@ -726,5 +794,14 @@ summary(m5)
 m5.simple = lmer(logRT ~ key*responder_type*Answer.condition - Answer.condition + (1|workerid), data=allany)
 summary(m5.simple)
 
+#semanticity instead of responder type 
+critical_sem = critical %>%
+  merge(responder[ ,c("workerid","n")], by="workerid",all.x=TRUE) %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
+  
+View(responder)
+
+m6 = lmer(logRT ~ Answer.condition*n*ckey + (1|workerid), data=critical_sem)
+summary(m6)
 ```
 
