@@ -22,3 +22,8 @@
 *trials.csv
 *mturk.csv
 *mturk/
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
