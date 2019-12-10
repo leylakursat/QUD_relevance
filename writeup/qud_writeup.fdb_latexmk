@@ -1,14 +1,14 @@
 # Fdb version 3
-["bibtex qud_writeup"] 1574405762 "qud_writeup.aux" "qud_writeup.bbl" "qud_writeup" 1574405762
+["bibtex qud_writeup"] 1574465632 "qud_writeup.aux" "qud_writeup.bbl" "qud_writeup" 1574465634
   "Science.bst" 0 -1 0 ""
-  "qud_writeup.aux" 1574405759 1326 3836dcccebef26ccca6b7555c9b38d16 ""
+  "qud_writeup.aux" 1574465633 1326 3836dcccebef26ccca6b7555c9b38d16 ""
   "scibib.bib" 0 -1 0 ""
   (generated)
-  "qud_writeup.bbl"
   "qud_writeup.blg"
-["pdflatex"] 1574405758 "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.tex" "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.pdf" "qud_writeup" 1574405762
-  "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.aux" 1574405759 1326 3836dcccebef26ccca6b7555c9b38d16 ""
-  "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.tex" 1574405762 13174 ee12fb22b41b19419e6f8b2791a3110f ""
+  "qud_writeup.bbl"
+["pdflatex"] 1574465632 "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.tex" "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.pdf" "qud_writeup" 1574465634
+  "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.aux" 1574465633 1326 3836dcccebef26ccca6b7555c9b38d16 ""
+  "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.tex" 1574465632 13173 9c84b7431648d190a181b9d6fc136f4f ""
   "/usr/local/texlive/2018/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cbfonts/grmn1200.tfm" 1480098701 2848 b1a6a10714c1e712320f7ebdeeab1248 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm" 1480098701 1324 c910af8c371558dc20f2d7822f66fe64 ""
@@ -72,12 +72,12 @@
   "img/exp5_responder.pdf" 1574247289 5551 e43d65d01d76513c0d718f8f085f2442 ""
   "img/exp5_response_time.pdf" 1574247225 4965 1bd6a60374bc5614b5a9b83ac4331e34 ""
   "models/best_model.png" 1574405416 308383 3384a8f6723c700269e80cc5df6ad696 ""
-  "qud_writeup.aux" 1574405759 1326 3836dcccebef26ccca6b7555c9b38d16 ""
+  "qud_writeup.aux" 1574465633 1326 3836dcccebef26ccca6b7555c9b38d16 ""
   "qud_writeup.bbl" 0 -1 0 "bibtex qud_writeup"
-  "qud_writeup.tex" 1574405762 13174 ee12fb22b41b19419e6f8b2791a3110f ""
+  "qud_writeup.tex" 1574465632 13173 9c84b7431648d190a181b9d6fc136f4f ""
   (generated)
   "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.log"
-  "qud_writeup.log"
   "/Users/leylakursat/Desktop/repos/QUD_relevance/writeup/qud_writeup.pdf"
-  "qud_writeup.pdf"
   "qud_writeup.aux"
+  "qud_writeup.log"
+  "qud_writeup.pdf"
