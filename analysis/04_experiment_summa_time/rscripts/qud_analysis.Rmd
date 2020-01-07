@@ -383,7 +383,11 @@ critical = df %>%
 
 nrow(critical) #6903 #6929
 
-#write.csv(critical, file = "exp4_critical.csv")
+#exclude no-QUD
+critical = critical %>%
+  filter(str_detect(Answer.condition,"no_QUD", negate = TRUE))
+
+#write.csv(critical, file = "experiment4_critical.csv")
 ```
   
 
@@ -419,7 +423,7 @@ pragmatic = ggplot(rtype2, aes(x = Answer.condition, y=Proportion)) +
 
 pragmatic
 
-ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=2.3,height=3)
+#ggsave(pragmatic, file="../graphs/proportion_pragmatic.pdf",width=2.3,height=3)
 
 ```
 
@@ -470,7 +474,7 @@ proportion2 = ggplot(d, aes(x=numPragmatic, y=prop_condition, fill=Answer.condit
 
 proportion2
 
-ggsave(proportion2, file="../graphs/pragmatic_proportion_answer.pdf",width=4,height=2)
+#ggsave(proportion2, file="../graphs/pragmatic_proportion_answer.pdf",width=4,height=2)
 
 ```
 
@@ -570,12 +574,12 @@ response_time = ggplot(agr, aes(fill=key,x=Answer.condition,y=Mean)) +
   geom_bar(stat="identity",position=position_dodge(.9)) +
   scale_fill_manual(values = key_col) +
   geom_errorbar(aes(ymin = YMin, ymax = YMax),width=.25,position=position_dodge(.9)) +
-  ylab("mean rawRT")+
+  ylab("mean RT in msec")+
   xlab("")+
   labs(fill="response") +
   #geom_point(data=agr2, aes(color = as.factor(workerid)),alpha=.2) +
   #geom_line(data=critical, aes(y = rt, group= as.factor(workerid),color = as.factor(workerid)),alpha=.2)+
-  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  #geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
   ylim(0,2000) +
   #scale_y_continuous(limits=c(0:1)) +
   theme(axis.text.y=element_text(size=8), axis.title=element_text(size=8), axis.text.x=element_text(size=8))
@@ -630,7 +634,8 @@ responder2 = ggplot(agr2, aes(fill=key,x=Answer.condition,y=Mean)) +
   xlab("") +
   labs(fill="response") +
   facet_grid(~responder_type)+
-  geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
+  ylab("mean RT in msec")+
+  #geom_text(aes(label=count, y = 5),position=position_dodge(width=1),vjust=0,size=2) +
   theme(axis.text.y=element_text(size=10), axis.title=element_text(size=8), axis.text.x=element_text(size=6)) +
   ylim(0,2500)
 

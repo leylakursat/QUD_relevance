@@ -7,9 +7,15 @@ library(lmerTest)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd('../data/')
 
-exp1 <- read.csv("experiment4_critical.csv")
-exp2 <- read.csv("experiment5_critical.csv")
+#with no QUD
+#exp1 <- read.csv("experiment4_critical.csv")
+#exp2 <- read.csv("experiment5_critical.csv")
 
+#without no QUD
+exp1 <- read.csv("noQUD_removed/experiment4_critical.csv")
+exp2 <- read.csv("noQUD_removed/experiment5_critical.csv")
+
+##########################################################################
 #exp1 is with summa, exp2 is with some
 df = exp1
 #df = exp2
