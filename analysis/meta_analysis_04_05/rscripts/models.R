@@ -3,14 +3,16 @@ library(lme4)
 library(languageR)
 library(brms)
 library(lmerTest)
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd('../data/')
 
-exp4 <- read.csv("experiment4_critical.csv")
-exp5 <- read.csv("experiment5_critical.csv")
+exp1 <- read.csv("experiment4_critical.csv")
+exp2 <- read.csv("experiment5_critical.csv")
 
-df = exp4
-df = exp5
+#exp1 is with summa, exp2 is with some
+df = exp1
+#df = exp2
 
 # 1.JUDGEMENTS - Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
 df = df %>%
@@ -64,7 +66,7 @@ anova(m3,m5) #to see if Answer condition adds anything
 m5 = lmer(logRT ~ Answer.condition*ckey + Answer.condition*cresponder_type + Answer.condition + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
 summary(m5)
 
-#model to focus on (keep the main ef of answer.condition)
+#model to focus on (keep the main effect of answer.condition)
 m10 = lmer(logRT ~ Answer.condition*ckey + Answer.condition + cresponder_type + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
 summary(m10)
 
@@ -74,7 +76,6 @@ m11 = lmer(logRT ~ ckey + Answer.condition + cresponder_type + cresponder_type:c
 summary(m11)
 
 #used model selection to determine best model
-
 
 anova(m11,m10) #getting rid of answer.condition*key interaction -> significant
 
