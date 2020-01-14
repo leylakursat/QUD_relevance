@@ -6,54 +6,163 @@ library(lmerTest)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd('../data/')
+source('../rscripts/helpers.R')
 
 #with no QUD
 #exp1 <- read.csv("experiment4_critical.csv")
 #exp2 <- read.csv("experiment5_critical.csv")
 
 #without no QUD
-exp1 <- read.csv("noQUD_removed/experiment4_critical.csv")
-exp2 <- read.csv("noQUD_removed/experiment5_critical.csv")
+exp1 <- read.csv("noQUD_removed/experiment4_critical.csv") %>%
+  select(-X.1,-X) %>%
+  rename(quantifier=audio) %>%
+  mutate(quantifier=fct_recode(quantifier,"some of"="summa.wav"))
+
+exp2 <- read.csv("noQUD_removed/experiment5_critical.csv") %>%
+  select(-X.1,-X) %>%
+  rename(quantifier=audio) %>%
+  mutate(quantifier=fct_recode(quantifier,"some"="some.wav"),workerid = workerid + 800) # add number of participants in exp1 to exp2 so they're unique
 
 ##########################################################################
 #exp1 is with summa, exp2 is with some
-df = exp1
+#df = exp1
 #df = exp2
+
+df = bind_rows(exp1,exp2) %>%
+  droplevels() %>%
+  mutate(quantifier = as.factor(as.character(quantifier)))
 
 # 1.JUDGEMENTS - Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
 df = df %>%
+  mutate(qud=fct_recode(Answer.condition,"any-QUD"="any_QUD","all-QUD"="all_QUD")) %>%
+  mutate(qud=fct_relevel(qud,"any-QUD")) %>%
   mutate(numericKey = ifelse(key == "Yes",1,0)) %>%
   mutate(numericKey = as.factor(numericKey)) %>%
-  mutate(ckey = as.numeric(key) - mean(as.numeric(key)))
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key))) %>%
+  mutate(response = as.factor(ifelse(key == "Yes","literal","pragmatic")),cqud=as.numeric(qud)-mean(as.numeric(qud)),cquantifier=as.numeric(quantifier)-mean(as.numeric(quantifier)))
 
-m = glmer(numericKey ~ Answer.condition + (1|workerid), data=df, family="binomial")
+m = glmer(response ~ cqud*cquantifier + (1|workerid), data=df, family="binomial")
 summary(m)
 
+m.simple = glmer(response ~ quantifier*Answer.condition - Answer.condition + (1|workerid), data=df, family="binomial")
+summary(m.simple) # simple effects show that the interaction in the model above is due to the qud effect being bigger for the "some" than the "some of" condition
+
+# re-plot judgments
+df$PragmaticResponse = ifelse(df$response == "pragmatic", 1, 0)
+
+toplot = df %>%
+  group_by(qud,quantifier) %>%
+  summarise(Mean=mean(PragmaticResponse),CILow=ci.low(PragmaticResponse),CIHigh=ci.high(PragmaticResponse)) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) 
+
+ggplot(toplot, aes(x=qud,y=Mean)) +
+  geom_bar(fill="gray80",color="black",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25) +
+  xlab("QUD") +
+  ylab("Proportion of pragmatic responses") +
+  facet_wrap(~quantifier) +
+  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
+ggsave("../graphs/fig1.pdf",width=3,height=2.7)
+
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
-m2=lmer(logRT ~ Answer.condition*ckey + (1|workerid), data=df)
-summary(m2)
+# this analysis needs to be done separately for the two quantifiers because the stims differ in length
+d.some = df %>%
+  filter(quantifier == "some") %>%
+  droplevels() %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key))) %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)))
 
-# Helmert coding 
-df$Answer.condition = as.factor(df$Answer.condition)
-df$qud.Helm <- df$Answer.condition
+m.some=lmer(logRT ~ cqud*cresponse + (1|workerid), data=d.some,REML=F)
+summary(m.some)
 
-contrasts(df$qud.Helm)<-cbind("all.vs.any"=c(-.5,.5,0), "all.vs.rest"=c(-(1/3),-(1/3),(2/3)))
+d.summa = df %>%
+  filter(quantifier == "some of") %>%
+  droplevels() %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key))) %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)))
 
-m8 = lmer(logRT ~ qud.Helm + (1|workerid), data=df)
-summary(m8)
+m.summa=lmer(logRT ~ cqud*cresponse + (1|workerid), data=d.summa,REML=F)
+summary(m.summa)
+
+# Helmert coding (not necessary when there are only two conditions)
+# df$Answer.condition = as.factor(df$Answer.condition)
+# df$qud.Helm <- df$Answer.condition
+# 
+# contrasts(df$qud.Helm)<-cbind("all.vs.any"=c(-.5,.5,0), "all.vs.rest"=c(-(1/3),-(1/3),(2/3)))
+# 
+# m8 = lmer(logRT ~ qud.Helm + (1|workerid), data=df)
+# summary(m8)
 
 # 3.RESPONDER TYPE - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type, responder type and their interaction
 responder = df %>%
   group_by(workerid,key, .drop=FALSE) %>%
   count(key) %>%
   filter(key=="No") %>%
-  mutate(responder_type = ifelse(n>4,"pragmatic",ifelse(n<4,"semantic",ifelse(n==4,"inconsistent","NA"))))
+  mutate(responder_type = ifelse(n>4,"pragmatic",ifelse(n<4,"literal",ifelse(n==4,"inconsistent","NA"))))
+
+responder$quantifier = ifelse(responder$workerid < 800, "summa","some")
+
+prop.table(table(responder$quantifier,responder$responder_type),mar=c(1))
 
 df_cresponder = df %>%
   merge(responder[ ,c("workerid","responder_type","n")], by="workerid",all.x=TRUE) %>%
   filter(responder_type != "inconsistent") %>%
-  mutate(responder_type = as.factor(responder_type)) %>%
-  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)))
+  mutate(responder_type = relevel(as.factor(responder_type),"literal"))
+
+df_full = df_cresponder %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
+
+# model reported in ELM abstract
+m.full=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
+summary(m.full)
+
+# to run the full models separately:
+d.some = df_cresponder %>%
+  filter(quantifier == "some") %>%
+  droplevels() %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
+
+m.some=lmer(logRT ~ cqud*cresponse*cresponder_type + (1|workerid), data=d.some,REML=F)
+summary(m.some)
+
+m.some.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.some,REML=F)
+summary(m.some.simple)
+
+d.summa = df_cresponder %>%
+  filter(quantifier == "some of") %>%
+  droplevels() %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
+
+m.summa=lmer(logRT ~ cqud*cresponse*cresponder_type + (1|workerid), data=d.summa,REML=F)
+summary(m.summa)
+
+m.summa.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.summa,REML=F)
+summary(m.summa.simple)
+
+# plot response times
+cbPalette <- c("#000000", "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00", "#CC79A7", "#F0E442")
+toplot = df_cresponder %>%
+  group_by(qud,quantifier,responder_type,response) %>%
+  summarise(Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt)) %>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  mutate(responder=fct_recode(responder_type,"lit. responders"="literal","prag. responders"="pragmatic"))
+dodge = position_dodge(.9)
+
+ggplot(toplot, aes(x=qud,y=Mean,fill=response)) +
+  geom_bar(color="black",stat="identity",position=dodge) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge) +
+  scale_fill_manual(values=cbPalette[2:3],name="Response") +
+  xlab("QUD") +
+  ylab("Mean response time (ms)") +
+  facet_wrap(~responder+quantifier,nrow=1) +
+  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
+ggsave("../graphs/fig2.pdf",width=6.5,height=2.7)
+
+
+
+
 
 #contrasts(df_cresponder$key)
 #contrasts(df_cresponder$Answer.condition)
