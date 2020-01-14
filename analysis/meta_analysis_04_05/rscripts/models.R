@@ -44,7 +44,7 @@ df = df %>%
 m = glmer(response ~ cqud*cquantifier + (1|workerid), data=df, family="binomial")
 summary(m)
 
-m.simple = glmer(response ~ quantifier*Answer.condition - Answer.condition + (1|workerid), data=df, family="binomial")
+m.simple = glmer(response ~ quantifier*qud - qud + (1|workerid), data=df, family="binomial")
 summary(m.simple) # simple effects show that the interaction in the model above is due to the qud effect being bigger for the "some" than the "some of" condition
 
 # re-plot judgments
@@ -63,7 +63,7 @@ ggplot(toplot, aes(x=qud,y=Mean)) +
   ylab("Proportion of pragmatic responses") +
   facet_wrap(~quantifier) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
-ggsave("../graphs/fig1.pdf",width=3,height=2.7)
+ggsave("../graphs/fig1.png",width=3,height=2.7)
 
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
 # this analysis needs to be done separately for the two quantifiers because the stims differ in length
@@ -137,8 +137,8 @@ d.summa = df_cresponder %>%
 m.summa=lmer(logRT ~ cqud*cresponse*cresponder_type + (1|workerid), data=d.summa,REML=F)
 summary(m.summa)
 
-m.summa.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.summa,REML=F)
-summary(m.summa.simple)
+# m.summa.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.summa,REML=F)
+# summary(m.summa.simple)
 
 # plot response times
 cbPalette <- c("#000000", "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00", "#CC79A7", "#F0E442")
@@ -158,60 +158,9 @@ ggplot(toplot, aes(x=qud,y=Mean,fill=response)) +
   ylab("Mean response time (ms)") +
   facet_wrap(~responder+quantifier,nrow=1) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
-ggsave("../graphs/fig2.pdf",width=6.5,height=2.7)
+ggsave("../graphs/fig2.png",width=6.5,height=2.7)
 
 
 
 
-
-#contrasts(df_cresponder$key)
-#contrasts(df_cresponder$Answer.condition)
-#contrasts(df_cresponder$responder_type)
-#table(df_cresponder$responder_type)
-#table(df_cresponder$key)
-
-m3 = lmer(logRT ~ Answer.condition*cresponder_type*ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m3)
-
-m4 = lmer(logRT ~ cresponder_type*ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m4)
-
-anova(m3,m5) #to see if Answer condition adds anything
-
-m5 = lmer(logRT ~ Answer.condition*ckey + Answer.condition*cresponder_type + Answer.condition + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m5)
-
-#model to focus on (keep the main effect of answer.condition)
-m10 = lmer(logRT ~ Answer.condition*ckey + Answer.condition + cresponder_type + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m10)
-
-anova(m5,m10)
-
-m11 = lmer(logRT ~ ckey + Answer.condition + cresponder_type + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m11)
-
-#used model selection to determine best model
-
-anova(m11,m10) #getting rid of answer.condition*key interaction -> significant
-
-m12 = lmer(logRT ~ Answer.condition:ckey + ckey + cresponder_type + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m12)
- 
-anova(m10,m12) #removing main effect of answer.cond doesn't change
-
-m6 = lmer(logRT ~ Answer.condition + cresponder_type + ckey + Answer.condition:cresponder_type + Answer.condition:ckey + cresponder_type:ckey + (1+ckey|workerid), data=df_cresponder)
-summary(m5)
-
-# 4.PRAGMATICITY - ?????
-m7 = lmer(logRT ~ Answer.condition*n*ckey + (1|workerid), data=df_pragmaticity)
-summary(m7)
-
-#only for all and any
-allany = df_cresponder %>%
-  filter(Answer.condition != "no_QUD") %>%
-  mutate(cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)), ckey = as.numeric(key) - mean(as.numeric(key)), cAnswer.condition = as.numeric(Answer.condition) - mean(as.numeric(Answer.condition))) %>%
-  droplevels()
-
-m9=lmer(logRT ~ Answer.condition + (1|workerid), data=allany)
-summary(m9)
 
