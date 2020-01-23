@@ -47,6 +47,21 @@ summary(m)
 m.simple = glmer(response ~ quantifier*qud - qud + (1|workerid), data=df, family="binomial")
 summary(m.simple) # simple effects show that the interaction in the model above is due to the qud effect being bigger for the "some" than the "some of" condition
 
+# separately for the two quantifiers (for CogSci paper)
+df_some = df %>%
+  filter(quantifier == "some") %>%
+  droplevels()
+
+m.some = glmer(response ~ cqud + (1|workerid), data=df_some, family="binomial")
+summary(m.some)
+
+df_summa = df %>%
+  filter(quantifier == "some of") %>%
+  droplevels()
+
+m.summa = glmer(response ~ cqud + (1|workerid), data=df_summa, family="binomial")
+summary(m.summa)
+
 # re-plot judgments
 df$PragmaticResponse = ifelse(df$response == "pragmatic", 1, 0)
 
@@ -56,12 +71,15 @@ toplot = df %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) 
 
+#reorder quantifier levels
+toplot$quantifier_re <- factor(toplot$quantifier, levels = c("some of","some"))
+
 ggplot(toplot, aes(x=qud,y=Mean)) +
   geom_bar(fill="gray80",color="black",stat="identity") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25) +
   xlab("QUD") +
   ylab("Proportion of pragmatic responses") +
-  facet_wrap(~quantifier) +
+  facet_wrap(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
 ggsave("../graphs/fig1.png",width=3,height=2.7)
 
@@ -150,17 +168,42 @@ toplot = df_cresponder %>%
   mutate(responder=fct_recode(responder_type,"lit. responders"="literal","prag. responders"="pragmatic"))
 dodge = position_dodge(.9)
 
+toplot$quantifier_re <- factor(toplot$quantifier, levels = c("some of","some"))
+
 ggplot(toplot, aes(x=qud,y=Mean,fill=response)) +
   geom_bar(color="black",stat="identity",position=dodge) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge) +
   scale_fill_manual(values=cbPalette[2:3],name="Response") +
   xlab("QUD") +
   ylab("Mean response time (ms)") +
-  facet_wrap(~responder+quantifier,nrow=1) +
-  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
+  facet_wrap(~responder+quantifier_re,nrow=2) +
+  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="top" )
+
 ggsave("../graphs/fig2.png",width=6.5,height=2.7)
+ggsave("../graphs/fig2.pdf",width=6.5,height=6.5)
 
+#plot response inconsistency and response times 
+pragmaticity = df %>%
+  group_by(workerid,response, .drop =FALSE) %>%
+  summarize(numPragmatic = n()) %>%
+  filter(response=="pragmatic")
 
+toplot = df %>%
+  merge(pragmaticity[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
+  group_by(numPragmatic,quantifier) %>%
+  summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) 
 
+#reorder quantifier levels
+toplot$quantifier_re <- factor(toplot$quantifier, levels = c("some of","some"))
+
+ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge) +
+  xlab("Number of pragmatic responses") +
+  scale_x_continuous(breaks=c(0:8)) +
+  ylim(0,2100) +
+  facet_grid(~quantifier_re)
 
 
