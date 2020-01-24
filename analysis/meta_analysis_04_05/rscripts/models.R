@@ -4,6 +4,8 @@ library(languageR)
 library(brms)
 library(lmerTest)
 
+theme_set(theme_bw())
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd('../data/')
 source('../rscripts/helpers.R')
@@ -82,6 +84,36 @@ ggplot(toplot, aes(x=qud,y=Mean)) +
   facet_wrap(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
 ggsave("../graphs/fig1.png",width=3,height=2.7)
+
+
+###plot proportion of participants and number of pragmatic answers
+pragmaticity = df %>%
+  group_by(workerid,response,.drop=FALSE) %>%
+  summarize(numPragmatic = n()) %>%
+  filter(response=="pragmatic") 
+totals = df %>%
+  merge(pragmaticity[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
+  group_by(qud,quantifier) %>%
+  summarise(total=n())
+prop = df %>%
+  merge(pragmaticity[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
+  #select(c("qud","quantifier","numPragmatic","total")) %>%
+  group_by(qud, quantifier, numPragmatic, .drop=FALSE) %>%
+  count() %>%
+  merge(totals[ ,c("qud","quantifier","total")], by=c("qud","quantifier"),all=TRUE) %>%
+  mutate(proportion=n/total) 
+prop$quantifier_re <- factor(prop$quantifier, levels = c("some of","some"))
+
+ggplot(prop, aes(x=numPragmatic, y=proportion, fill=qud)) +
+  geom_bar(stat="identity", position = position_dodge(.6), width = 0.6) +
+  xlab("Number of pragmatic responses") +
+  ylab("Proportion of participants ") +
+  labs(fill="QUD") +
+  scale_x_continuous(breaks=c(0:8)) +
+  theme(axis.text.y=element_text(size=10), axis.title=element_text(size=12), axis.text.x=element_text(size=10), legend.position = "bottom") +
+  facet_wrap(~quantifier_re, nrow = 2) +
+  ylim(0,0.6)
+ggsave("../graphs/fig4.png",width=5,height=5)
 
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
 # this analysis needs to be done separately for the two quantifiers because the stims differ in length
@@ -177,12 +209,12 @@ ggplot(toplot, aes(x=qud,y=Mean,fill=response)) +
   xlab("QUD") +
   ylab("Mean response time (ms)") +
   facet_wrap(~responder+quantifier_re,nrow=2) +
-  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="top" )
+  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom" )
 
-ggsave("../graphs/fig2.png",width=6.5,height=2.7)
-ggsave("../graphs/fig2.pdf",width=6.5,height=6.5)
+#ggsave("../graphs/fig2.png",width=6.5,height=2.7)
+ggsave("../graphs/fig2.png",width=6.5,height=6.5)
 
-#plot response inconsistency and response times 
+#plot response count and response times 
 pragmaticity = df %>%
   group_by(workerid,response, .drop =FALSE) %>%
   summarize(numPragmatic = n()) %>%
@@ -202,11 +234,10 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
   geom_bar(fill="gray80",color="black",stat="identity") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.2,position=dodge) +
   xlab("Number of pragmatic responses") +
+  ylab("Mean response time (ms)") +
   scale_x_continuous(breaks=c(0:8)) +
   ylim(0,2100) #+
   facet_grid(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
   
-ggsave("../graphs/fig3.pdf",width=4,height=3)
-
-
+ggsave("../graphs/fig3.png",width=4,height=3)

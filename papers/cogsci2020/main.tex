@@ -46,8 +46,7 @@
 \newcommand{\jd}[1]{\textcolor{Red}{[jd: #1]}}
 \definecolor{Blue}{RGB}{0,100,255}
 \newcommand{\blue}[1]{\textcolor{Blue}{#1}}
-\newcommand{\lk}[1]{\textcolor{Blue}{[Seb: #1]}}
-
+\newcommand{\lk}[1]{\textcolor{Blue}{[lk: #1]}}
 
 %\setlength\titlebox{4.5cm}
 % You can expand the titlebox if you need extra space
@@ -57,13 +56,16 @@
 %%the camera-ready version, which could interfere with the timely
 %%appearance of your paper in the Proceedings.
 
-
 \title{Probability and processing speed of scalar inferences is context-dependent}
  
-\author{{\large \textbf{Leyla Kursat}  {\normalfont and} \textbf{Judith Degen}}  \\
- \{lkursat, jdegen\}@stanford.edu \\
-  Department of Linguistics, Stanford University \\
-  Stanford, CA 94305, USA}
+% \author{{\large \textbf{Leyla Kursat}  {\normalfont and} \textbf{Judith Degen}}  \\
+%  \{lkursat, jdegen\}@stanford.edu \\
+%   Department of Linguistics, Stanford University \\
+%   Stanford, CA 94305, USA}
+
+\author{{\large \textbf{names}}  \\
+ \{names\}@school\\
+  Address}
 
 \begin{document}
 
@@ -86,8 +88,7 @@ The past two decades have seen a wealth of studies addressing the question of wh
 
 The past two decades have seen a wealth of studies addressing the question of whether or not scalar inferences -- whereby a listener takes a sentence like \textit{Alex ate some of the cookies} to mean that he did not eat all of them -- generally incur a processing cost, with conflicting results \cite{BottNoveck2004,HuangSnedeker2009,Grodner2010,Breheny2013,DegenTanenhaus2016}. This has spurred the development of studies seeking to understand the contextual conditions that facilitate scalar inferences \cite{Zondervan2010,Degen2015,Augurzky2019,MartyChemla2013,DegenGoodman2014}.
 
-Here, we test a prediction made by \citeA{DegenTanenhaus2015}
-'s constaint-based account: that the probability of an interpretation and the speed with which it is processed is a function of the contextual support it receives. In contrast, if scalar inferences generally incur a processing cost, pragmatic responses reflecting that the scalar inference was drawn should be slower to process than literal responses regardless of context. To test the constraint-based versus the costly inference account, we manipulated two features of context between participants in a truth-value judgement task: one lexical (\textit{presence of partititve "of"}) and one pragmatic (\textit{implicit QUD, see (1) and (2)}). This allowed us to obtain estimates of inference rate and processing speed. We further considered a participant’s \textit{responder type  --} whether they have a preference to respond literally or pragmatically -- as a predictive feature for response times. While the partitive and the QUD have previously been shown to affect the probability of drawing a scalar inference \cite{Zondervan2010,Degen2015,DegenGoodman2014,DegenTanenhaus2015}, contextual and participant-specific effects on processing speed have remained under-explored.
+Here, we test a prediction made by \citeA{DegenTanenhaus2015}'s constaint-based account: that the probability of an interpretation and the speed with which it is processed is a function of the contextual support it receives. In contrast, if scalar inferences generally incur a processing cost, pragmatic responses reflecting that the scalar inference was drawn should be slower to process than literal responses regardless of context. To test the constraint-based versus the costly inference account, we manipulated two features of context between participants in a truth-value judgement task: one lexical (\textit{presence of partititve "of"}) and one pragmatic (\textit{implicit QUD, see (1) and (2)}). This allowed us to obtain estimates of inference rate and processing speed. We further considered a participant’s \textit{responder type  --} whether they have a preference to respond literally or pragmatically -- as a predictive feature for response times. While the partitive and the QUD have previously been shown to affect the probability of drawing a scalar inference \cite{Zondervan2010,Degen2015,DegenGoodman2014,DegenTanenhaus2015}, contextual and participant-specific effects on processing speed have remained under-explored.
 
 Implicit QUDs (manipulated via cover stories as in \citeA{Degen2013}):
 \begin{enumerate}
@@ -166,8 +167,13 @@ There was an interaction between QUD and response ($\beta$=-0.12, SE=0.03, t=-3.
 The largest observed effect was the interaction between responder type and response ($\beta$=-0.28, SE=0.03, t=-8.37, p$<$.0001), such that pragmatic responses were faster than literal responses for pragmatic responders and literal responses were faster than pragmatic responses for literal responders.
 
 \begin{figure}
-\includegraphics[width=\columnwidth]{plots/judgements.pdf}
+\includegraphics[width=\columnwidth]{plots/judgements.png}
 \caption{Proportion of pragmatic responses on partitive "some of" (left) and non-partitive "some" (right) critical trials. Error bars indicate bootstrapped 95\% confidence intervals. \label{fig:judgements}}
+\end{figure}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{plots/proportion.png}
+  \caption{Distribution of participants over number of pragmatic responses given on critical trials. \label{fig:proportion}}
 \end{figure}
 
 \section{Experiment 2: Non-partitive statement}
@@ -185,7 +191,7 @@ The largest observed effect was the interaction between responder type and respo
 \subsection{Results and discussion}
 
 \begin{figure}
-  \includegraphics[width=\columnwidth]{plots/responsetimes.pdf}
+  \includegraphics[width=\columnwidth]{plots/responsetimes.png}
   \caption{Mean response times for literal (green) and pragmatic (orange) responses generated by literal (upper panels) and pragmatic (lower panels) responders on partitive "some of" and non-partitive "some" critical trials. \label{fig:responsetimes}}
 \end{figure}
 
@@ -206,7 +212,7 @@ In both experiments, the QUD and
 This suggests that contextual factors affect listeners' overall contextual response strategy which in turn impacts the speed with which they process the preferred interpretation. This is evidence against costly inferece accounts and in support of constraint-based accounts.
 
 \begin{figure}
-  \includegraphics[width=\columnwidth]{plots/consistency.pdf}
+  \includegraphics[width=\columnwidth]{plots/consistency.png}
   \caption{Mean response times for participants grouped based on the number of pragmatic responses they gave. \label{fig:consistency}}
 \end{figure}
 
