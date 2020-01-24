@@ -190,7 +190,7 @@ pragmaticity = df %>%
 
 toplot = df %>%
   merge(pragmaticity[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
-  group_by(numPragmatic,quantifier) %>%
+  group_by(numPragmatic) %>%
   summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) 
@@ -199,11 +199,14 @@ toplot = df %>%
 toplot$quantifier_re <- factor(toplot$quantifier, levels = c("some of","some"))
 
 ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
-  geom_bar(stat = "identity") +
-  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge) +
+  geom_bar(fill="gray80",color="black",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.2,position=dodge) +
   xlab("Number of pragmatic responses") +
   scale_x_continuous(breaks=c(0:8)) +
-  ylim(0,2100) +
-  facet_grid(~quantifier_re)
+  ylim(0,2100) #+
+  facet_grid(~quantifier_re) +
+  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
+  
+ggsave("../graphs/fig3.pdf",width=4,height=3)
 
 

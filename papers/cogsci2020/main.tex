@@ -93,7 +93,6 @@ Implicit QUDs (manipulated via cover stories as in \citeA{Degen2013}):
   \item Did I get any of the gumballs? (\textit{any}-QUD, \textit{less supportive of scalar inference})
 \end{enumerate} 
 
-
 \section{Experimental paradigm}
 
 \begin{figure}
@@ -119,19 +118,18 @@ Participants were assigned to one of the two conditions (\textit{all}-QUD, \text
       \multicolumn{8}{c}{\textbf{Set size}} \\
       \textbf{Quantifier} & 0 & 2 & 5 & 8 & 11 & 13 & \multicolumn{1}{l}{\textbf{Total}} \\
       \midrule
-      \textit{some/some of} & x & x & x & x & x & x & x \\
-      \textit{all of} & x & x & x & x & x & x & x \\
-      \textit{none of} & x & x & x & x & x & x & x \\
-      number & x & x & x & x & x & x & x \\
+      \textit{some/some of} & 4 & 1 & 1 & 1 & 1 & 8 & 16 \\
+      \textit{all of} & 2 & 1 & 2 & 1 & 2 & 8 & 16 \\
+      \textit{none of} & 4 & 1 & 0 & 1 & 1 & 1 & 8 \\
+      number & 3 & 7 & 7 & 7 & 5 & 3 & 32 \\
       \bottomrule
-      \textbf{Total} & x & x & x & x & x & x & x
+      \textbf{Total} & 13 & 10 & 10 & 10 & 9 & 20 & 72
       \end{tabular}
     \caption{Distribution of experimental trials over quantifiers and set sizes.\label{tab:stimuli}}
   \end{table}
 
 \section{Experiment 1: Partitive statement}
 
-\textcolor{red}{In Experiment 1, the partitive form was XXX}.
 Procedure, materials, analyses and exclusions were pre-registered on OSF (https://osf.io/suwtr).
 
 \subsection{Methods}
@@ -152,13 +150,18 @@ After the practice trials, there were 72 experimental trials. On 32 of the trial
 \noindent \textbf{Analysis and predictions} Only responses to critical trials are reported below. (?)...
 
 \subsection{Results and discussion}
-\noindent \textbf{Judgements} 
-As shown in Figure~\ref{fig:judgements}, participants in the \textit{all}-QUD condition gave more pragmatic "disagree" responses than participants in the \textit{any}-QUD. \textcolor{red}{or} A mixed effects logistic regression predicting response type with random by-participant intercepts from fixed effects of QUD found a main effect of QUD such that there are more pragmatic responses for \textit{all}-QUD compared to \textit{any}-QUD ($\beta$=0, SE=0, t=0, p$<$.0001). \textcolor{red}{This was previously shown...}. 
+\noindent \textbf{Judgements}
+48\% of responses given by the participants in the \textit{all}-QUD condition were pragmatic compared to 30\% of pragmatic responses given by participants in the \textit{any}-QUD condition (Figure~\ref{fig:judgements})($\beta$=1.31, SE=0.52, p$<$.05).
+
+\textcolor{red}{or} 
+A mixed effects logistic regression predicting response type with random by-participant intercepts from fixed effects of QUD found a main effect of QUD such that there are more pragmatic responses for \textit{all}-QUD compared to \textit{any}-QUD ($\beta$=1.31, SE=0.52, p$<$.05).
 
 Participants were divided into two groups based on their responses. Participants with more than 4 pragmatic responses were categorized as pragmatic responders (38\%) and participants with less than 4 pragmatic responses were categorized as literal responders (60\%).
 
 \noindent \textbf{Response Times} 
-There was an interaction between QUD and response ($\beta$=0, SE=0, t=0, p$<$.0001) such that pragmatic responses were faster under the \textit{all}-QUD than under the \textit{any}-QUD. The largest observed effect was the itneraction between responder type and response ($\beta$=0, SE=0, t=0, p$<$.0001), such that pragmatic responses were faster than literal responses for pragmatic responders and literal responses were faster than pragmatic responses for literal responders.
+There was an interaction between QUD and response ($\beta$=-0.12, SE=0.03, t=-3.70, p$<$.0001) such that pragmatic responses were faster under the \textit{all}-QUD than under the \textit{any}-QUD. 
+
+The largest observed effect was the interaction between responder type and response ($\beta$=-0.28, SE=0.03, t=-8.37, p$<$.0001), such that pragmatic responses were faster than literal responses for pragmatic responders and literal responses were faster than pragmatic responses for literal responders.
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{plots/judgements.pdf}
@@ -167,15 +170,13 @@ There was an interaction between QUD and response ($\beta$=0, SE=0, t=0, p$<$.00
 
 \section{Experiment 2: Non-partitive statement}
 
-In Exp.~2, 
-
 \subsection{Methods}
 
 \noindent \textbf{Participants} We recruited 800 participants on Amazon Mechanical Turk. Participants were required to have a US-based IP address and a minimal approval rating of 95\%. They were paid \$2.3.
 
 \noindent \textbf{Materials and procedure} The materials and procedures were the same as in Exp.~1 except on critical trials, when all 13 gumballs dropped to the lower chamber, participants hear the non-partitive statement "You got \textit{some} gumballs".
 
-As in Experiment 1, we excluded non-native English speakers (n=X), participants who got the second comprehension question wrong more than twice (n=Y), and participants that had accuracy lower than 85\% on non-critical trials (n=Z).
+\noindent \textbf{Exclusions} As in Experiment 1, we excluded non-native English speakers (n=X), participants who got the second comprehension question wrong more than twice (n=Y), and participants that had accuracy lower than 85\% on non-critical trials (n=Z).
 
 \noindent \textbf{Analysis and predictions}
 
@@ -186,11 +187,21 @@ As in Experiment 1, we excluded non-native English speakers (n=X), participants 
   \caption{Mean response times for literal (green) and pragmatic (orange) responses generated by literal (upper panels) and pragmatic (lower panels) responders on partitive "some of" and non-partitive "some" critical trials. \label{fig:responsetimes}}
 \end{figure}
 
-Lastly, the effect size (Cohen's $d$: 1.68) was larger in this experiment than in Experiment 1 and the single-speaker 
+\noindent \textbf{Judgements}
+As shown in Figure~\ref{fig:judgements}, participants in the \textit{all}-QUD condition gave more pragmatic "disagree" responses than participants in the \textit{any}-QUD ($\beta$=4.69, SE=0.80, p$<$.0001). 
+
+\noindent \textbf{Response Times}
+(change wording - same as exp1) There was an interaction between QUD and response ($\beta$=-0.07, SE=0.03, t=-2.25, p$<$.01) such that pragmatic responses were faster under the \textit{all}-QUD than under the \textit{any}-QUD. 
+
+The largest observed effect was the interaction between responder type and response ($\beta$=-0.26, SE=0.03, t=-8.17, p$<$.0001), such that pragmatic responses were faster than literal responses for pragmatic responders and literal responses were faster than pragmatic responses for literal responders.
+
 
 \section{General discussion and conclusion}
+Overall, pragmatic "disagree" responses were more likely in the partitive ($\beta$=7.16, SE=0.69, p$<$.0001) and in the \textit{all}-QUD ($\beta$=2.85, SE=0.44, p$<$.0001) condition, replicating previous results.
 
-\textcolor{red}{In two experiments, we found that}.This suggests that contextual factors affect listeners' overall contextual response strategy, which in turn impacts the speed with which they process the preferred interpretation. This is evidence against costly inferece accounts and in support of constraint-based accounts.
+In both experiments, the QUD and 
+
+This suggests that contextual factors affect listeners' overall contextual response strategy which in turn impacts the speed with which they process the preferred interpretation. This is evidence against costly inferece accounts and in support of constraint-based accounts.
 
 \begin{figure}
   \includegraphics[width=\columnwidth]{plots/consistency.pdf}
