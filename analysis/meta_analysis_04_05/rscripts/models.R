@@ -116,6 +116,7 @@ ggplot(prop, aes(x=numPragmatic, y=proportion, fill=qud)) +
 ggsave("../graphs/fig4.png",width=5,height=5)
 
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
+
 # this analysis needs to be done separately for the two quantifiers because the stims differ in length
 d.some = df %>%
   filter(quantifier == "some") %>%
@@ -134,6 +135,17 @@ d.summa = df %>%
 
 m.summa=lmer(logRT ~ cqud*cresponse + (1|workerid), data=d.summa,REML=F)
 summary(m.summa)
+
+#### if we do it together?
+d.tog = df %>%
+  mutate(ckey = as.numeric(key) - mean(as.numeric(key))) %>%
+  mutate(cquantifier=as.numeric(quantifier)-mean(as.numeric(quantifier))) %>%
+  mutate(cresponse=as.numeric(response)-mean(as.numeric(response))) %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)))
+
+m.tog=lmer(logRT ~ cquantifier*cresponse + (1|workerid), data=d.tog,REML=F)
+summary(m.tog)
+####
 
 # Helmert coding (not necessary when there are only two conditions)
 # df$Answer.condition = as.factor(df$Answer.condition)
