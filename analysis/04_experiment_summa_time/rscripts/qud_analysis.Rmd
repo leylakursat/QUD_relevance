@@ -33,6 +33,12 @@ df$logRT = log(df$rawRT)
 
 df$rt = df$rawRT
 #df$rt = df$logRT
+
+# exclude no-QUD
+df = df %>%
+  filter(str_detect(Answer.condition,"no_QUD", negate = TRUE))
+demo = demo %>%
+  filter(str_detect(speaker_cond,"noQUD", negate = TRUE))
 ```
 ### Before Exclusions
 **Number of participants tested:**

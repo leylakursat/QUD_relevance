@@ -10,6 +10,10 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd('../data/')
 source('../rscripts/helpers.R')
 
+#cbPalette <- c("#000000", "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00",
+"#CC79A7", "#F0E442")
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 #with no QUD
 #exp1 <- read.csv("experiment4_critical.csv")
 #exp2 <- read.csv("experiment5_critical.csv")
@@ -19,13 +23,13 @@ exp1 <- read.csv("noQUD_removed/experiment4_critical.csv") %>%
   select(-X.1,-X) %>%
   rename(quantifier=audio) %>%
   mutate(quantifier=fct_recode(quantifier,"some of"="summa.wav")) %>%
-  mutate(new_rt=rt-0.868454)
+  mutate(new_rt=rt-868)
 
 exp2 <- read.csv("noQUD_removed/experiment5_critical.csv") %>%
   select(-X.1,-X) %>%
   rename(quantifier=audio) %>%
   mutate(quantifier=fct_recode(quantifier,"some"="some.wav"),workerid = workerid + 800) %>% # add number of participants in exp1 to exp2 so they're unique
-  mutate(new_rt=rt-0.735889)
+  mutate(new_rt=rt-735)
 
 ##########################################################################
 #exp1 is with summa, exp2 is with some
@@ -35,7 +39,7 @@ exp2 <- read.csv("noQUD_removed/experiment5_critical.csv") %>%
 df = bind_rows(exp1,exp2) %>%
   droplevels() %>%
   mutate(quantifier = as.factor(as.character(quantifier))) %>%
-  mutate(logNRT = log(new_rt))
+  mutate(logNRT = log(new_rt)) 
 
 # 1.JUDGEMENTS - Mixed effects logistic regression predicting response type with random by-participant intercepts, from fixed effects of QUD
 df = df %>%
@@ -89,29 +93,27 @@ ggplot(toplot, aes(x=qud,y=Mean,fill=qud)) +
   facet_wrap(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1)) +
   guides(fill=FALSE)
-ggsave("../graphs/fig1.png",width=3,height=2.7)
+ggsave("../graphs/fig1.pdf",width=3,height=2.7)
 
 ###plot proportion of participants and number of pragmatic answers
 pragmaticity = df %>%
   group_by(workerid,response,.drop=FALSE) %>%
   summarize(numPragmatic = n()) %>%
-  filter(response=="pragmatic") 
-totals = df %>%
-  merge(pragmaticity[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
+  filter(response=="pragmatic") %>%
+  merge(df[ ,c("workerid","qud","quantifier")], by="workerid",all.x=TRUE) %>%
+  unique() %>%
   mutate(quantifier=fct_recode(quantifier,"Exp. 1: some of"="some of","Exp. 2: some"="some")) %>%
+  group_by(quantifier,numPragmatic,qud) %>%
+  #group_by(quantifier,numPragmatic) %>%
+  tally() %>%
   group_by(qud,quantifier) %>%
-  summarise(total=n())
-prop = df %>%
-  mutate(quantifier=fct_recode(quantifier,"Exp. 1: some of"="some of","Exp. 2: some"="some")) %>%
-  merge(pragmaticity[ ,c("workerid","numPragmatic")], by="workerid",all.x=TRUE) %>%
-  #select(c("qud","quantifier","numPragmatic","total")) %>%
-  group_by(qud, quantifier, numPragmatic, .drop=FALSE) %>%
-  count() %>%
-  merge(totals[ ,c("qud","quantifier","total")], by=c("qud","quantifier"),all=TRUE) %>%
-  mutate(proportion=n/total) 
-prop$quantifier_re <- factor(toplot$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
+  #group_by(quantifier)%>%
+  mutate(total=sum(n)) %>%
+  mutate(proportion=n/total)
+  
+pragmaticity$quantifier_re <- factor(pragmaticity$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
 
-ggplot(prop, aes(x=numPragmatic, y=proportion, fill=qud)) +
+ggplot(pragmaticity, aes(x=numPragmatic, y=proportion, fill=qud)) +
   geom_bar(stat="identity", position = position_dodge(.6), width = 0.6) +
   scale_fill_manual(values=cbPalette[2:3]) +
   xlab("Number of pragmatic responses") +
@@ -121,7 +123,8 @@ ggplot(prop, aes(x=numPragmatic, y=proportion, fill=qud)) +
   theme(axis.text.y=element_text(size=10), axis.title=element_text(size=12), axis.text.x=element_text(size=10), legend.position = "bottom") +
   facet_wrap(~quantifier_re, nrow = 2) +
   ylim(0,0.6)
-ggsave("../graphs/fig4.png",width=5,height=5)
+
+ggsave("../graphs/fig4.pdf",width=5,height=5)
 
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
 
@@ -146,6 +149,7 @@ summary(m.summa)
 
 #### if we do it together with new response times
 d.tog = df %>%
+  filter(new_rt>0) %>%
   mutate(ckey = as.numeric(key) - mean(as.numeric(key))) %>%
   mutate(cquantifier=as.numeric(quantifier)-mean(as.numeric(quantifier))) %>%
   mutate(cresponse=as.numeric(response)-mean(as.numeric(response))) %>%
@@ -158,7 +162,6 @@ m.tog=lmer(logNRT ~ cquantifier*cresponse + (1|workerid), data=d.tog,REML=F)
 summary(m.tog)
 
 ####
-
 # Helmert coding (not necessary when there are only two conditions)
 # df$Answer.condition = as.factor(df$Answer.condition)
 # df$qud.Helm <- df$Answer.condition
@@ -215,10 +218,6 @@ summary(m.summa)
 # summary(m.summa.simple)
 
 # plot response times
-#cbPalette <- c("#000000", "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00",
-               "#CC79A7", "#F0E442")
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
 toplot = df_cresponder %>%
   mutate(quantifier=fct_recode(quantifier,"Exp. 1: some of"="some of","Exp. 2: some"="some")) %>%
   group_by(qud,quantifier,responder_type,response) %>%
@@ -234,14 +233,14 @@ ggplot(toplot, aes(x=qud,y=Mean,alpha=response,fill=qud)) +
   geom_bar(stat="identity",position=dodge) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge) +
   scale_fill_manual(values=cbPalette[2:3],guide='none') +
-  scale_alpha_discrete(range=c(0.3, 1), name="Response") +
+  scale_alpha_discrete(range=c(0.4, 1), name="Response") +
   xlab("QUD") +
   ylab("Mean response time (ms)") +
   facet_wrap(~quantifier_re+responder,nrow=2) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom" )
 
 #ggsave("../graphs/fig2.png",width=6.5,height=2.7)
-ggsave("../graphs/fig2.png",width=6.5,height=6.5)
+ggsave("../graphs/fig2.pdf",width=6.5,height=6.5)
 
 #plot response count and response times 
 pragmaticity = df %>%
@@ -269,4 +268,4 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
   facet_grid(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
   
-ggsave("../graphs/fig3.png",width=4,height=3)
+ggsave("../graphs/fig3.pdf",width=4,height=3)
