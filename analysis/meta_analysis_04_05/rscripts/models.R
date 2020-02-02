@@ -155,9 +155,6 @@ d.tog = df %>%
   mutate(cresponse=as.numeric(response)-mean(as.numeric(response))) %>%
   mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)))
 
-m.tog=lmer(logNRT ~ cqud*cresponse + (1|workerid), data=d.tog,REML=F)
-summary(m.tog)
-
 m.tog=lmer(logNRT ~ cquantifier*cresponse + (1|workerid), data=d.tog,REML=F)
 summary(m.tog)
 
@@ -185,6 +182,7 @@ prop.table(table(responder$quantifier,responder$responder_type),mar=c(1))
 df_cresponder = df %>%
   merge(responder[ ,c("workerid","responder_type","n")], by="workerid",all.x=TRUE) %>%
   filter(responder_type != "inconsistent") %>%
+  filter(new_rt>0) %>%
   mutate(responder_type = relevel(as.factor(responder_type),"literal"))
 
 df_full = df_cresponder %>%
@@ -192,6 +190,10 @@ df_full = df_cresponder %>%
 
 # model reported in ELM abstract
 m.full=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
+summary(m.full)
+
+# full model with new RT
+m.full_rt=lmer(logNRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
 summary(m.full)
 
 # to run the full models separately:
@@ -224,7 +226,7 @@ toplot = df_cresponder %>%
   summarise(Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt)) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
-  mutate(responder=fct_recode(responder_type,"lit. responders"="literal","prag. responders"="pragmatic"))
+  mutate(responder=fct_recode(responder_type,"literal responders"="literal","pragmatic responders"="pragmatic"))
 dodge = position_dodge(.9)
 
 toplot$quantifier_re <- factor(toplot$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
@@ -240,7 +242,7 @@ ggplot(toplot, aes(x=qud,y=Mean,alpha=response,fill=qud)) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom" )
 
 #ggsave("../graphs/fig2.png",width=6.5,height=2.7)
-ggsave("../graphs/fig2.pdf",width=6.5,height=6.5)
+ggsave("../graphs/fig2.png",width=6.5,height=6.5)
 
 #plot response count and response times 
 pragmaticity = df %>%
@@ -268,4 +270,4 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
   facet_grid(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
   
-ggsave("../graphs/fig3.pdf",width=4,height=3)
+ggsave("../graphs/fig3.png",width=4,height=3)
