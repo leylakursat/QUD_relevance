@@ -193,7 +193,7 @@ m.full=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), d
 summary(m.full)
 
 # full model with new RT
-m.full_rt=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
+m.full_rt=lmer(logNRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
 summary(m.full)
 
 # to run the full models separately:
@@ -226,7 +226,7 @@ toplot = df_cresponder %>%
   summarise(Mean=mean(rt),CILow=ci.low(rt),CIHigh=ci.high(rt)) %>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
-  mutate(responder=fct_recode(responder_type,"lit. responders"="literal","prag. responders"="pragmatic"))
+  mutate(responder=fct_recode(responder_type,"literal responders"="literal","pragmatic responders"="pragmatic"))
 dodge = position_dodge(.9)
 
 toplot$quantifier_re <- factor(toplot$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
@@ -242,7 +242,7 @@ ggplot(toplot, aes(x=qud,y=Mean,alpha=response,fill=qud)) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom" )
 
 #ggsave("../graphs/fig2.png",width=6.5,height=2.7)
-ggsave("../graphs/fig2.pdf",width=6.5,height=6.5)
+ggsave("../graphs/fig2.png",width=6.5,height=6.5)
 
 #plot response count and response times 
 pragmaticity = df %>%
@@ -270,4 +270,4 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
   facet_grid(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
   
-ggsave("../graphs/fig3.pdf",width=4,height=3)
+ggsave("../graphs/fig3.png",width=4,height=3)
