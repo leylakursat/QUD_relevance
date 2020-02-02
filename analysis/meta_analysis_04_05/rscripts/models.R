@@ -155,9 +155,6 @@ d.tog = df %>%
   mutate(cresponse=as.numeric(response)-mean(as.numeric(response))) %>%
   mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)))
 
-m.tog=lmer(logNRT ~ cqud*cresponse + (1|workerid), data=d.tog,REML=F)
-summary(m.tog)
-
 m.tog=lmer(logNRT ~ cquantifier*cresponse + (1|workerid), data=d.tog,REML=F)
 summary(m.tog)
 
@@ -185,6 +182,7 @@ prop.table(table(responder$quantifier,responder$responder_type),mar=c(1))
 df_cresponder = df %>%
   merge(responder[ ,c("workerid","responder_type","n")], by="workerid",all.x=TRUE) %>%
   filter(responder_type != "inconsistent") %>%
+  filter(new_rt>0) %>%
   mutate(responder_type = relevel(as.factor(responder_type),"literal"))
 
 df_full = df_cresponder %>%
@@ -192,6 +190,10 @@ df_full = df_cresponder %>%
 
 # model reported in ELM abstract
 m.full=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
+summary(m.full)
+
+# full model with new RT
+m.full_rt=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
 summary(m.full)
 
 # to run the full models separately:
