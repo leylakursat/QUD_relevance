@@ -113,13 +113,23 @@ audio_fail = df %>%
 **Participants who got the second comprehension question wrong more than twice:**
 ```{r comp_exclude, echo=FALSE}
 comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
+
 comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
 
 #table(comp1_fail$workerid)
 #table(comp2_fail$workerid)
 
+table(comp1_fail$Answer.condition)
+table(comp2_fail$Answer.condition)
+
+comp1_fail = comp1_fail %>%
+  group_by(workerid,Answer.condition) %>%
+  count() %>%
+  filter(n>2)
+
+
 comp2_fail =  comp2_fail %>%
-  group_by(workerid) %>%
+  group_by(workerid,Answer.condition) %>%
   count() %>%
   filter(n>2)
 
