@@ -120,8 +120,17 @@ comp1_fail = df[df$slide_type=="comprehension_check_1" & ((df$Answer.condition==
 
 comp2_fail = df[df$slide_type=="comprehension_check_2" & ((df$Answer.condition=="all_QUD" & df$key!="Empty") | (df$Answer.condition=="any_QUD" & df$key!="Jam")),]
 
-comp1_faill = comp1_fail %>%
-  unique(workerid)
+comp1_wrong = comp1_fail %>%
+  group_by(workerid,Answer.condition) %>%
+  count() 
+
+table(comp1_wrong$Answer.condition)
+
+comp2_wrong = comp2_fail %>%
+  group_by(workerid,Answer.condition) %>%
+  count() 
+
+table(comp2_wrong$Answer.condition)
 
 #table(comp1_fail$workerid)
 #table(comp2_fail$workerid)
