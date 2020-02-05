@@ -184,7 +184,16 @@ df_cresponder = df %>%
   filter(new_rt>0) %>%
   mutate(responder_type = relevel(as.factor(responder_type),"literal"))
 
+df_cresponder.tog = d.tog %>%
+  merge(responder[ ,c("workerid","responder_type","n")], by="workerid",all.x=TRUE) %>%
+  filter(responder_type != "inconsistent") %>%
+  filter(new_rt>0) %>%
+  mutate(responder_type = relevel(as.factor(responder_type),"literal"))
+
 df_full = df_cresponder %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
+
+df_full.tog = df_cresponder.tog %>%
   mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
 
 # model reported in ELM abstract
@@ -192,8 +201,12 @@ m.full=lmer(logRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), d
 summary(m.full)
 
 # full model with new RT
-m.full_rt=lmer(logNRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full,REML=F)
+m.full_rt=lmer(logNRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full.tog,REML=F)
 summary(m.full)
+
+# simple with nnew rt
+m.some.simple.quant=lmer(logRT ~ responder_type*response*qud*quantifier - quantifier + (1|workerid), data=df_full.tog,REML=F)
+summary(m.some.simple.quant)
 
 # to run the full models separately:
 d.some = df_cresponder %>%
@@ -204,8 +217,14 @@ d.some = df_cresponder %>%
 m.some=lmer(logRT ~ cqud*cresponse*cresponder_type + (1|workerid), data=d.some,REML=F)
 summary(m.some)
 
-m.some.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.some,REML=F)
-summary(m.some.simple)
+# effect of lit-to-prag for diff respondertypes
+m.some.simple.rt=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.some,REML=F)
+summary(m.some.simple.rt)
+
+# effect of lit-to-prag for diff quds
+m.some.simple.q=lmer(logRT ~ qud*responder_type*response - response + (1|workerid), data=d.some,REML=F)
+summary(m.some.simple.rt)
+
 
 d.summa = df_cresponder %>%
   filter(quantifier == "some of") %>%
@@ -215,8 +234,16 @@ d.summa = df_cresponder %>%
 m.summa=lmer(logRT ~ cqud*cresponse*cresponder_type + (1|workerid), data=d.summa,REML=F)
 summary(m.summa)
 
-# m.summa.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.summa,REML=F)
-# summary(m.summa.simple)
+m.summa=lmer(logRT ~ qud*response*responder_type + (1|workerid), data=d.summa,REML=F)
+summary(m.summa)
+
+# effect of lit-to-prag for diff respondertypes
+m.summa.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.summa,REML=F)
+summary(m.summa.simple)
+
+# effect of lit-to-prag for diff quds
+m.summa.simple=lmer(logRT ~ qud*responder_type*response - response + (1|workerid), data=d.summa,REML=F)
+summary(m.summa.simple)
 
 # plot response times
 toplot = df_cresponder %>%
@@ -238,10 +265,11 @@ ggplot(toplot, aes(x=qud,y=Mean,alpha=response,fill=qud)) +
   xlab("QUD") +
   ylab("Mean response time (ms)") +
   facet_wrap(~quantifier_re+responder,nrow=2) +
-  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom" )
+  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom",plot.margin=unit(c(0,0,0,0),"pt"),legend.margin=margin(-10,0,0,0))
 
 #ggsave("../graphs/fig2.png",width=6.5,height=2.7)
-ggsave("../graphs/fig2.png",width=6.5,height=6.5)
+# ggsave("../graphs/fig2.png",width=6.5,height=6.5)
+ggsave("../../../papers/cogsci2020/plots/responsetimes.pdf",width=4.3,height=4.5)
 
 #plot response count and response times 
 pragmaticity = df %>%
