@@ -204,7 +204,7 @@ summary(m.full)
 m.full_rt=lmer(logNRT ~ cquantifier*cqud*cresponse*cresponder_type + (1|workerid), data=df_full.tog,REML=F)
 summary(m.full)
 
-# simple with nnew rt
+# simple with new rt
 m.some.simple.quant=lmer(logRT ~ responder_type*response*qud*quantifier - quantifier + (1|workerid), data=df_full.tog,REML=F)
 summary(m.some.simple.quant)
 
@@ -223,9 +223,9 @@ summary(m.some.simple.rt)
 
 # effect of lit-to-prag for diff quds
 m.some.simple.q=lmer(logRT ~ qud*responder_type*response - response + (1|workerid), data=d.some,REML=F)
-summary(m.some.simple.rt)
+summary(m.some.simple.q)
 
-
+########################################
 d.summa = df_cresponder %>%
   filter(quantifier == "some of") %>%
   droplevels() %>%
@@ -234,8 +234,8 @@ d.summa = df_cresponder %>%
 m.summa=lmer(logRT ~ cqud*cresponse*cresponder_type + (1|workerid), data=d.summa,REML=F)
 summary(m.summa)
 
-m.summa=lmer(logRT ~ qud*response*responder_type + (1|workerid), data=d.summa,REML=F)
-summary(m.summa)
+#m.summa=lmer(logRT ~ qud*response*responder_type + (1|workerid), data=d.summa,REML=F)
+#summary(m.summa)
 
 # effect of lit-to-prag for diff respondertypes
 m.summa.simple=lmer(logRT ~ responder_type*qud*response - response + (1|workerid), data=d.summa,REML=F)
