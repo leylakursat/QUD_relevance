@@ -229,6 +229,26 @@ summary(m.some.simple.q)
 m.some.simple.inter=lmer(logRT ~ responder_type*qud*response - qud:response + (1|workerid), data=d.some,REML=F)
 summary(m.some.simple.inter)
 
+literal = d.some %>%
+  filter(responder_type == "literal") %>%
+  droplevels() %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
+
+m.some.literal=lmer(logRT ~ cqud*cresponse + (1|workerid), data=literal,REML=F)
+summary(m.some.literal)
+
+pragmatic = d.some %>%
+  filter(responder_type == "pragmatic") %>%
+  droplevels() %>%
+  mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
+
+m.some.pragmatic=lmer(logRT ~ cqud*cresponse + (1|workerid), data=pragmatic,REML=F)
+summary(m.some.pragmatic)
+
+m.some.pragmatic.simple=lmer(logRT ~ qud*response - response + (1|workerid), data=pragmatic,REML=F)
+summary(m.some.pragmatic.simple)
+
+
 
 d.summa = df_cresponder %>%
   filter(quantifier == "some of") %>%
