@@ -409,3 +409,58 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean, fill=key)) +
   
 ggsave("../graphs/fig6.png",width=6,height=3)
 
+#4th consistency plot
+pragmaticity = df %>%
+  group_by(workerid,response, .drop =FALSE) %>%
+  summarize(numPragmatic = n()) %>%
+  filter(response=="pragmatic") %>%
+  mutate(num = ifelse(numPragmatic=="8",0,ifelse(numPragmatic=="7",1,ifelse(numPragmatic=="6",2,ifelse(numPragmatic=="5",3,numPragmatic))))) %>%
+  mutate(dominant = ifelse(numPragmatic<4,"semantic",ifelse(numPragmatic>4,"pragmatic","equal")))
+
+toplot = df %>%
+  merge(pragmaticity[ ,c("workerid","num","dominant")], by="workerid",all.x=TRUE) %>%
+  group_by(num,dominant) %>%
+  summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+ggplot(toplot, aes(x=num, y=Mean, fill=dominant)) +
+  geom_bar(stat="identity", position=position_dodge(),width=0.8) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.3,position=position_dodge(0.8)) +
+  scale_fill_manual(values=c("#acb4b5","#859E35","#E9DE47")) +
+  xlab("Number of one type of responses") +
+  ylab("Mean response time (ms)") +
+  labs(fill = "Dominant response type") +
+  scale_x_continuous(breaks=c(0:8)) +
+  theme(axis.text.x=element_text(hjust=1,vjust=1))
+
+ggsave("../graphs/fig7.png",width=6,height=3)
+
+#5th consistency plot
+pragmaticity = df %>%
+  group_by(workerid,response, .drop =FALSE) %>%
+  summarize(numPragmatic = n()) %>%
+  filter(response=="pragmatic") %>%
+  mutate(num = ifelse(numPragmatic=="8",0,ifelse(numPragmatic=="7",1,ifelse(numPragmatic=="6",2,ifelse(numPragmatic=="5",3,numPragmatic))))) %>%
+  mutate(responder= ifelse(numPragmatic<4,"literal",ifelse(numPragmatic>4,"pragmatic","equal")))
+
+toplot = df %>%
+  select(workerid,rt,key) %>%
+  merge(pragmaticity[ ,c("workerid","num","responder")], by="workerid",all.x=TRUE) %>%
+  mutate(answerType=ifelse((responder=="pragmatic" & key=="No"),"dominant",ifelse((responder=="literal" & key=="Yes"),"dominant","non-dominant"))) %>%
+  group_by(num,answerType) %>%
+  summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
+  ungroup() %>%
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+ggplot(toplot, aes(x=num, y=Mean, fill=answerType)) +
+  geom_bar(stat="identity", position=position_dodge(),width=0.8) +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.3,position=position_dodge(0.8)) +
+  scale_fill_manual(values=c("#859E35","#E9DE47")) +
+  xlab("Number of one type of response") +
+  ylab("Mean response time (ms)") +
+  labs(fill = "Response type") +
+  scale_x_continuous(breaks=c(0:8)) +
+  theme(axis.text.x=element_text(hjust=1,vjust=1))
+
+ggsave("../graphs/fig8.png",width=6,height=3)
