@@ -225,6 +225,10 @@ summary(m.some.simple.rt)
 m.some.simple.q=lmer(logRT ~ qud*responder_type*response - response + (1|workerid), data=d.some,REML=F)
 summary(m.some.simple.q)
 
+# qud:response interaction for different responder types
+m.some.simple.inter=lmer(logRT ~ responder_type*qud*response - qud:response + (1|workerid), data=d.some,REML=F)
+summary(m.some.simple.inter)
+
 
 d.summa = df_cresponder %>%
   filter(quantifier == "some of") %>%
