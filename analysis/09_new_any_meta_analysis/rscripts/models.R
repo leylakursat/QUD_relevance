@@ -92,7 +92,7 @@ ggplot(toplot, aes(x=qud,y=Mean,fill=qud)) +
   facet_wrap(~quantifier_re) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1)) +
   guides(fill=FALSE)
-ggsave("../graphs/fig1.pdf",width=3,height=2.7)
+ggsave("../graphs/fig1.png",width=3,height=2.7)
 
 ###plot proportion of participants and number of pragmatic answers
 pragmaticity = df %>%
@@ -123,7 +123,7 @@ ggplot(pragmaticity, aes(x=numPragmatic, y=proportion, fill=qud)) +
   facet_wrap(~quantifier_re, nrow = 2) +
   ylim(0,0.6)
 
-ggsave("../graphs/fig4.pdf",width=5,height=5)
+ggsave("../graphs/fig4.png",width=5,height=5)
 
 # 2.RESPONSE TIME - Mixed effects linear regression model with random by-participant intercepts predicting log-transformed response time from fixed effects of QUD, response type and their interaction
 
@@ -271,7 +271,7 @@ ggplot(toplot, aes(x=qud,y=Mean,alpha=response,fill=qud)) +
   facet_wrap(~quantifier_re+responder,nrow=2) +
   theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1),legend.position="bottom",plot.margin=unit(c(0,0,0,0),"pt"),legend.margin=margin(-10,0,0,0))
 
-#ggsave("../graphs/fig2.png",width=6.5,height=2.7)
+ggsave("../graphs/fig2.png",width=4.3,height=4.5)
 # ggsave("../graphs/fig2.png",width=6.5,height=6.5)
 ggsave("../../../papers/cogsci2020/plots/responsetimes.pdf",width=4.3,height=4.5)
 
@@ -297,8 +297,8 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean)) +
   xlab("Number of pragmatic responses") +
   ylab("Mean response time (ms)") +
   scale_x_continuous(breaks=c(0:8)) +
-  ylim(0,2100) #+
-  facet_grid(~quantifier_re) +
-  theme(axis.text.x=element_text(angle=15,hjust=1,vjust=1))
+  ylim(0,2100) +
+  #facet_grid(~quantifier_re) +
+  theme(axis.text.x=element_text(hjust=1,vjust=1))
   
 ggsave("../graphs/fig3.png",width=4,height=3)
