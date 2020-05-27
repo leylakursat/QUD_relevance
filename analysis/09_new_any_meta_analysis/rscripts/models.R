@@ -424,7 +424,7 @@ ggplot(toplot, aes(x=num, y=Mean, fill=answerType)) +
   geom_bar(stat="identity", position=position_dodge(),width=0.8) +
   geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.3,position=position_dodge(0.8)) +
   scale_fill_manual(values=c("#859E35","#E9DE47")) +
-  xlab("Number of one type of responses") +
+  xlab("Number of one type of response") +
   ylab("Mean response time (ms)") +
   labs(fill = "Response type") +
   scale_x_continuous(breaks=c(0:8)) +
