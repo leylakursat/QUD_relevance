@@ -411,33 +411,6 @@ ggplot(toplot, aes(x=numPragmatic, y=Mean, fill=key)) +
   
 ggsave("../graphs/fig6.png",width=6,height=3)
 
-#4th consistency plot
-pragmaticity = df %>%
-  group_by(workerid,response, .drop =FALSE) %>%
-  summarize(numPragmatic = n()) %>%
-  filter(response=="pragmatic") %>%
-  mutate(num = ifelse(numPragmatic=="8",0,ifelse(numPragmatic=="7",1,ifelse(numPragmatic=="6",2,ifelse(numPragmatic=="5",3,numPragmatic))))) %>%
-  mutate(dominant = ifelse(numPragmatic<4,"semantic",ifelse(numPragmatic>4,"pragmatic","equal")))
-
-toplot = df %>%
-  merge(pragmaticity[ ,c("workerid","num","dominant")], by="workerid",all.x=TRUE) %>%
-  group_by(num,dominant) %>%
-  summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
-  ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
-
-ggplot(toplot, aes(x=num, y=Mean, fill=dominant)) +
-  geom_bar(stat="identity", position=position_dodge(),width=0.8) +
-  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.3,position=position_dodge(0.8)) +
-  scale_fill_manual(values=c("#acb4b5","#859E35","#E9DE47")) +
-  xlab("Number of one type of responses") +
-  ylab("Mean response time (ms)") +
-  labs(fill = "Dominant response type") +
-  scale_x_continuous(breaks=c(0:8)) +
-  theme(axis.text.x=element_text(hjust=1,vjust=1))
-
-ggsave("../graphs/fig7.png",width=6,height=3)
-
 #5th consistency plot
 pragmaticity = df %>%
   group_by(workerid,response, .drop =FALSE) %>%
@@ -447,26 +420,37 @@ pragmaticity = df %>%
   mutate(responder= ifelse(numPragmatic<4,"literal",ifelse(numPragmatic>4,"pragmatic","equal")))
 
 toplot = df %>%
-  select(workerid,rt,key,quantifier) %>%
-  mutate(quantifier=fct_recode(quantifier,"Exp. 1: some of"="some of","Exp. 2: some"="some")) %>%
+  select(workerid,rt,key) %>%
   merge(pragmaticity[ ,c("workerid","num","responder")], by="workerid",all.x=TRUE) %>%
-  mutate(answerType=ifelse((responder=="pragmatic" & key=="No"),"dominant",ifelse((responder=="literal" & key=="Yes"),"dominant","non-dominant"))) %>%
-  group_by(num,answerType,quantifier) %>%
+  mutate(answerType=ifelse((responder=="pragmatic" & key=="No"),"dominant",ifelse((responder=="literal" & key=="Yes"),"dominant",ifelse(num==4,"inconsistent","non-dominant")))) %>%
+  group_by(num,answerType) %>%
   summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
   ungroup() %>%
-  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
-
-toplot$quantifier_re <- factor(toplot$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>%
+  mutate(answerType=fct_relevel(answerType,"dominant","non-dominant"))
 
 ggplot(toplot, aes(x=num, y=Mean, fill=answerType)) +
   geom_bar(stat="identity", position=position_dodge(),width=0.8) +
-  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.3,position=position_dodge(0.8)) +
-  scale_fill_manual(values=c("#859E35","#E9DE47")) +
-  xlab("Number of one type of response") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.2,position=position_dodge(0.8)) +
+  scale_fill_manual(values=c("#859E35","#E9DE47","gray60")) +
+  xlab("Number of non-dominant responses") +
   ylab("Mean response time (ms)") +
-  labs(fill = "Response type") +
-  scale_x_continuous(breaks=c(0:8)) +
-  theme(axis.text.x=element_text(hjust=1,vjust=1)) +
-  facet_wrap(~quantifier_re)
+  labs(fill = "Response") 
 
-ggsave("../graphs/fig9.png",width=6,height=3)
+ggsave("../../../papers/cogsci2020/plots/consistency.pdf",width=4.5,height=2.5)
+
+# auxiliary resonse consistency analysis
+toplot = df %>%
+  select(workerid,rt,key) %>%
+  merge(pragmaticity[ ,c("workerid","num","responder")], by="workerid",all.x=TRUE) %>%
+  mutate(answerType=ifelse((responder=="pragmatic" & key=="No"),0,ifelse((responder=="literal" & key=="Yes"),0,1))) %>%
+  mutate(dom=as.factor(ifelse((responder=="pragmatic" & key=="No"),"dominant",ifelse((responder=="literal" & key=="Yes"),"dominant","non-dominant")))) %>%
+  mutate(logRT=log(rt)) %>%
+  mutate(cNonDominant=answerType-mean(answerType),cnum=num-mean(num))
+summary(toplot)
+
+m = lmer(logRT ~ cNonDominant*cnum + (1|workerid),data=toplot)
+summary(m)
+
+m.simple = lmer(logRT ~ dom*cnum - cnum + (1|workerid),data=toplot)
+summary(m.simple)
