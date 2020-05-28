@@ -230,6 +230,7 @@ m.some.simple.inter=lmer(logRT ~ responder_type*qud*response - qud:response + (1
 summary(m.some.simple.inter)
 
 
+
 # subset analyses for literal vs pragmatic responders
 d.some.literal = d.some %>%
   filter(responder_type == "literal") %>%
@@ -247,7 +248,7 @@ d.some.pragmatic = d.some %>%
 m.some.pragmatic=lmer(logRT ~ cqud*cresponse + (1|workerid), data=d.some.pragmatic,REML=F)
 summary(m.some.pragmatic)
 
-m.some.pragmatic.simple=lmer(logRT ~ qud*response - response + (1|workerid), data=d.some.pragmatic,REML=F)
+m.some.pragmatic.simple=lmer(logRT ~ response*qud - qud + (1|workerid), data=d.some.pragmatic,REML=F)
 summary(m.some.pragmatic.simple)
 
 
@@ -272,7 +273,7 @@ m.summa.simple=lmer(logRT ~ qud*responder_type*response - response + (1|workerid
 summary(m.summa.simple)
 
 # effect of any-to-all for diff responses
-m.summa.simple=lmer(logRT ~ responder_type*response*qud - qud + (1|workerid), data=d.summa,REML=F)
+m.summa.simple=lmer(logRT ~ response*responder_type*qud - qud + (1|workerid), data=d.summa,REML=F)
 summary(m.summa.simple)
 
 
