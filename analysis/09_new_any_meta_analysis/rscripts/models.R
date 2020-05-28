@@ -81,7 +81,6 @@ toplot = df %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) 
 
 #reorder quantifier levels
-toplot$quantifier_re <- factor(toplot$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
 
 ggplot(toplot, aes(x=qud,y=Mean,fill=qud)) +
   geom_bar(stat="identity") +
@@ -230,23 +229,23 @@ m.some.simple.inter=lmer(logRT ~ responder_type*qud*response - qud:response + (1
 summary(m.some.simple.inter)
 
 
-
 # subset analyses for literal vs pragmatic responders
 d.some.literal = d.some %>%
   filter(responder_type == "literal") %>%
   droplevels() %>%
   mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
 
-m.some.literal=lmer(logRT ~ cqud*cresponse + (1|workerid), data=d.some.literal,REML=F)
+m.some.literal=lmer(logRT ~ cqud*cresponse + (1|workerid), data=literal,REML=F)
 summary(m.some.literal)
 
-d.some.pragmatic = d.some %>%
+pragmatic = d.some %>%
   filter(responder_type == "pragmatic") %>%
   droplevels() %>%
   mutate(cqud=as.numeric(qud)-mean(as.numeric(qud)),cresponse=as.numeric(response)-mean(as.numeric(response)),cresponder_type = as.numeric(responder_type) - mean(as.numeric(responder_type)))
 
-m.some.pragmatic=lmer(logRT ~ cqud*cresponse + (1|workerid), data=d.some.pragmatic,REML=F)
+m.some.pragmatic=lmer(logRT ~ cqud*cresponse + (1|workerid), data=pragmatic,REML=F)
 summary(m.some.pragmatic)
+
 
 m.some.pragmatic.simple=lmer(logRT ~ response*qud - qud + (1|workerid), data=d.some.pragmatic,REML=F)
 summary(m.some.pragmatic.simple)
@@ -271,6 +270,7 @@ summary(m.summa.simple)
 # effect of lit-to-prag for diff quds
 m.summa.simple=lmer(logRT ~ qud*responder_type*response - response + (1|workerid), data=d.summa,REML=F)
 summary(m.summa.simple)
+
 
 # effect of any-to-all for diff responses
 m.summa.simple=lmer(logRT ~ response*responder_type*qud - qud + (1|workerid), data=d.summa,REML=F)
@@ -329,6 +329,7 @@ ggsave("../graphs/fig2.png",width=4.3,height=4.5)
 # ggsave("../graphs/fig2.png",width=6.5,height=6.5)
 ggsave("../../../papers/cogsci2020/plots/responsetimes.pdf",width=4.3,height=4.5)
 
+dodge = position_dodge(.9)
 #plot response count and response times 
 pragmaticity = df %>%
   group_by(workerid,response, .drop =FALSE) %>%
@@ -446,13 +447,16 @@ pragmaticity = df %>%
   mutate(responder= ifelse(numPragmatic<4,"literal",ifelse(numPragmatic>4,"pragmatic","equal")))
 
 toplot = df %>%
-  select(workerid,rt,key) %>%
+  select(workerid,rt,key,quantifier) %>%
+  mutate(quantifier=fct_recode(quantifier,"Exp. 1: some of"="some of","Exp. 2: some"="some")) %>%
   merge(pragmaticity[ ,c("workerid","num","responder")], by="workerid",all.x=TRUE) %>%
   mutate(answerType=ifelse((responder=="pragmatic" & key=="No"),"dominant",ifelse((responder=="literal" & key=="Yes"),"dominant","non-dominant"))) %>%
-  group_by(num,answerType) %>%
+  group_by(num,answerType,quantifier) %>%
   summarise(Mean = mean(rt), CILow=ci.low(rt),CIHigh=ci.high(rt))%>%
   ungroup() %>%
   mutate(YMin=Mean-CILow,YMax=Mean+CIHigh)
+
+toplot$quantifier_re <- factor(toplot$quantifier, levels = c("Exp. 1: some of","Exp. 2: some"))
 
 ggplot(toplot, aes(x=num, y=Mean, fill=answerType)) +
   geom_bar(stat="identity", position=position_dodge(),width=0.8) +
@@ -462,6 +466,7 @@ ggplot(toplot, aes(x=num, y=Mean, fill=answerType)) +
   ylab("Mean response time (ms)") +
   labs(fill = "Response type") +
   scale_x_continuous(breaks=c(0:8)) +
-  theme(axis.text.x=element_text(hjust=1,vjust=1))
+  theme(axis.text.x=element_text(hjust=1,vjust=1)) +
+  facet_wrap(~quantifier_re)
 
-ggsave("../graphs/fig8.png",width=6,height=3)
+ggsave("../graphs/fig9.png",width=6,height=3)
